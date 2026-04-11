@@ -17,6 +17,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+import authRouter from './routes/auth';
+import adminRouter from './routes/admin';
+
+app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/loyalty', loyaltyRouter);
 app.use('/api/wallet/v1', walletServiceRouter);
 
