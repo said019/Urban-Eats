@@ -15,13 +15,24 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
   // Leer imágenes de wallet-assets
   const assetsDir = path.join(process.cwd(), 'wallet-assets', 'apple.pass');
   const buffers: { [key: string]: Buffer } = {};
-  
+
   if (fs.existsSync(assetsDir)) {
     const files = fs.readdirSync(assetsDir);
     for (const file of files) {
       if (file.endsWith('.png')) {
         buffers[file] = fs.readFileSync(path.join(assetsDir, file));
       }
+    }
+  }
+
+  // Seleccionar strip dinámico según cantidad de sellos
+  const safeStamps = Math.max(0, Math.min(Number(stamps) || 0, 10));
+  const stripSuffixes = ['', '@2x', '@3x'];
+  for (const suffix of stripSuffixes) {
+    const stampFile = `stamp-strip-${safeStamps}${suffix}.png`;
+    const passFile = `strip${suffix}.png`;
+    if (buffers[stampFile]) {
+      buffers[passFile] = buffers[stampFile];
     }
   }
 
