@@ -20,8 +20,11 @@ export default function CardPage() {
   const [isRedeeming, setIsRedeeming] = useState(false);
 
   useEffect(() => {
+    // URL Base para conexión nativa
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
     // Buscar al cliente por su URL slug (ej: sarah)
-    fetch(`http://localhost:3001/api/loyalty/clients/search/${clientId}`)
+    fetch(`${API_BASE}/api/loyalty/clients/search/${clientId}`)
       .then(res => res.json())
       .then(data => {
         if (!data.error) {
@@ -58,9 +61,12 @@ export default function CardPage() {
   const handleConfirmRedeem = async () => {
     setIsRedeeming(true);
     
+    // URL Base para conexión nativa
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
     if (dbClientId) {
       try {
-        const res = await fetch(`http://localhost:3001/api/loyalty/clients/${dbClientId}/redeem`, {
+        const res = await fetch(`${API_BASE}/api/loyalty/clients/${dbClientId}/redeem`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: redeemType })
@@ -154,7 +160,7 @@ export default function CardPage() {
         className="w-full max-w-sm mt-12 space-y-3"
       >
         <a 
-          href={dbClientId ? `http://localhost:3001/api/loyalty/clients/${dbClientId}/apple-wallet` : '#'}
+          href={dbClientId ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/loyalty/clients/${dbClientId}/apple-wallet` : '#'}
           className={`w-full py-4 rounded-full border border-zinc-700 bg-black/40 backdrop-blur-md flex items-center justify-center gap-3 text-sm font-bold text-white transition-colors ${dbClientId ? 'hover:border-brand-orange cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
