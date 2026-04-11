@@ -1,0 +1,11 @@
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+coverage/
+*.pkpass
+wallet-assets/apple.pass/*.pem
+wallet-assets/apple.pass/*.key

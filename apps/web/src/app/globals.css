@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f1115; /* Dark background */
+  --foreground: #f4f4f5; /* Light text */
+  --brand-orange: #ff5e00;
+  --brand-yellow: #ffb800;
+  --glow-orange: rgba(255, 94, 0, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-yellow: var(--brand-yellow);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 15px var(--glow-orange);
+  }
+
+  .neon-text {
+    text-shadow: 0 0 10px var(--glow-orange);
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
