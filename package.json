@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "build": "pnpm -r run build",
-    "start": "pnpm -r run start"
+    "start": "cd apps/api && node dist/index.js & cd apps/web && npx next start -p ${PORT:-3000}"
   },
   "engines": {
     "node": ">=18"
