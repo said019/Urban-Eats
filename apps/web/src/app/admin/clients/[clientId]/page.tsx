@@ -15,7 +15,7 @@ export default function AdminClientDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchClientStatus = async () => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
     try {
       // Re-utilizamos la vista pública (que extrae todo lo necesario)
       const res = await fetch(`${API_BASE}/api/loyalty/clients/${clientId}`);
@@ -44,7 +44,7 @@ export default function AdminClientDetailPage() {
 
     setActionLoading(true);
     const token = localStorage.getItem('admin_token');
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
     
     try {
       const res = await fetch(`${API_BASE}/api/admin/clients/${clientId}/stamp`, {

@@ -1,6 +1,7 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { pool } from '../db';
 import { sendAPNsAlertNotification, buildApplePassBuffer } from '../wallet/apple';
+import { buildGoogleWalletUrl } from '../wallet/google';
 
 const router = Router();
 
@@ -124,9 +125,33 @@ export const redeemReward: RequestHandler = async (req: Request, res: Response):
   }
 };
 
+// GET /api/loyalty/clients/:clientId/google-wallet
+export const getGoogleWalletUrl: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+  const { clientId } = req.params;
+  try {
+    const { rows } = await pool.query('SELECT id, name, stamps FROM clients WHERE id = $1', [clientId]);
+    if (rows.length === 0) {
+      res.status(404).json({ error: 'Cliente no encontrado' });
+      return;
+    }
+
+    const client = rows[0];
+    const saveUrl = buildGoogleWalletUrl(client.id, client.name, client.stamps);
+    res.json({ saveUrl });
+  } catch (error: any) {
+    console.error('[Google Wallet] Error:', error);
+    if (error.message?.includes('no está configurado')) {
+      res.status(503).json({ error: 'Google Wallet no está configurado en el servidor.' });
+      return;
+    }
+    res.status(500).json({ error: 'Error generando el pase de Google Wallet.' });
+  }
+};
+
 router.get('/clients/search/:name', getClientByName);
 router.get('/clients/:clientId', getClientDetails);
 router.get('/clients/:clientId/apple-wallet', getAppleWalletPass);
+router.get('/clients/:clientId/google-wallet', getGoogleWalletUrl);
 router.post('/clients/:clientId/redeem', redeemReward);
 
 export default router;

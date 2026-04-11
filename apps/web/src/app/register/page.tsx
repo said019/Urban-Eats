@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: '', phone: '', country_code: '+57' });
+  const [formData, setFormData] = useState({ name: '', phone: '', country_code: '+52' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,7 +15,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
 
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
     try {
       const res = await fetch(`${API_BASE}/api/admin/clients`, {
@@ -78,9 +78,25 @@ export default function RegisterPage() {
                 value={formData.country_code}
                 onChange={(e) => setFormData({ ...formData, country_code: e.target.value })}
               >
-                <option value="+57">🇨🇴 +57</option>
                 <option value="+52">🇲🇽 +52</option>
+                <option value="+57">🇨🇴 +57</option>
                 <option value="+54">🇦🇷 +54</option>
+                <option value="+56">🇨🇱 +56</option>
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+593">🇪🇨 +593</option>
+                <option value="+58">🇻🇪 +58</option>
+                <option value="+591">🇧🇴 +591</option>
+                <option value="+595">🇵🇾 +595</option>
+                <option value="+598">🇺🇾 +598</option>
+                <option value="+506">🇨🇷 +506</option>
+                <option value="+507">🇵🇦 +507</option>
+                <option value="+502">🇬🇹 +502</option>
+                <option value="+503">🇸🇻 +503</option>
+                <option value="+504">🇭🇳 +504</option>
+                <option value="+505">🇳🇮 +505</option>
+                <option value="+53">🇨🇺 +53</option>
+                <option value="+1809">🇩🇴 +1809</option>
+                <option value="+1">🇺🇸 +1</option>
               </select>
             </div>
             <div className="w-2/3">

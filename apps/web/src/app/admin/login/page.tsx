@@ -15,7 +15,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
     try {
       const res = await fetch(`${API_BASE}/api/auth/login`, {

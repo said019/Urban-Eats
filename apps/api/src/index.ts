@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import dotenv from 'dotenv';
 import loyaltyRouter from './routes/loyalty';
 import walletServiceRouter from './routes/apple-wallet-service';
@@ -12,6 +13,9 @@ const port = process.env.PORT || 3001; // Cambiado a 3001 por si 3000 es web
 
 app.use(cors());
 app.use(express.json());
+
+// Servir assets de wallet (logo, strips) para Google Wallet
+app.use('/api/loyalty/assets', express.static(path.join(process.cwd(), 'wallet-assets', 'apple.pass')));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
