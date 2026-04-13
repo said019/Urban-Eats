@@ -33,6 +33,8 @@ async function buildApplePassBuffer(cardId: string, clientName: string, stamps: 
     }
   }
 
+  const firstName = (clientName || '').trim().split(/\s+/)[0] || clientName;
+
   const passJson = {
     formatVersion: 1,
     passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID,
@@ -42,28 +44,33 @@ async function buildApplePassBuffer(cardId: string, clientName: string, stamps: 
     description: 'Urban Eats Rewards',
     logoText: 'Urban Eats',
     foregroundColor: 'rgb(255, 255, 255)',
-    backgroundColor: 'rgb(15, 17, 21)',
-    labelColor: 'rgb(255, 184, 0)',
+    backgroundColor: 'rgb(26, 15, 5)',
+    labelColor: 'rgb(255, 138, 0)',
     storeCard: {
-      headerFields: [],
-      primaryFields: [
-        { key: 'stamps', label: 'SELLOS', value: `${stamps} / 10` },
+      headerFields: [
+        { key: 'member', label: 'MIEMBRO', value: firstName },
       ],
+      primaryFields: [],
       secondaryFields: [
-        { key: 'client', label: 'MIEMBRO', value: clientName },
-      ],
-      auxiliaryFields: [
+        { key: 'stamps', label: 'SELLOS', value: `${stamps} / 10`, textAlignment: 'PKTextAlignmentLeft' },
         {
           key: 'reward',
           label: 'PRÓXIMO PREMIO',
-          value: stamps >= 10 ? '¡PERRO GRATIS!' : '25% OFF al Sello 5',
+          value: stamps >= 10 ? '¡PERRO GRATIS! 🌭' : stamps >= 5 ? '25% OFF disponible' : `Faltan ${5 - stamps} para 25% OFF`,
+          textAlignment: 'PKTextAlignmentRight',
         },
       ],
+      auxiliaryFields: [],
       backFields: [
+        {
+          key: 'howto',
+          label: 'CÓMO FUNCIONA',
+          value: 'Acumula 1 sello por cada compra. Al llegar a 5 sellos obtienes 25% OFF. Al llegar a 10 sellos un Perro GRATIS!',
+        },
         {
           key: 'terms',
           label: 'TÉRMINOS',
-          value: 'Válido en la sucursal. Los hot dogs gratis no aplican en otras promos.',
+          value: 'Válido en sucursal Urban Eats. Los hot dogs gratis no se combinan con otras promociones. Tarjeta personal e intransferible.',
         },
       ],
     },
@@ -71,6 +78,7 @@ async function buildApplePassBuffer(cardId: string, clientName: string, stamps: 
       format: 'PKBarcodeFormatQR',
       message: cardId,
       messageEncoding: 'iso-8859-1',
+      altText: firstName,
     },
   };
 
