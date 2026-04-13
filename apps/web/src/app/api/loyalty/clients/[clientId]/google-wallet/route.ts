@@ -8,24 +8,30 @@ export const dynamic = 'force-dynamic';
 
 function buildGoogleWalletUrl(clientId: string, clientName: string, stamps: number): string {
   const ISSUER_ID = process.env.GOOGLE_ISSUER_ID || '';
-  const SERVICE_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
+  const SERVICE_EMAIL = process.env.GOOGLE_SA_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
 
   if (!ISSUER_ID || !SERVICE_EMAIL) {
-    throw new Error('Google Wallet no está configurado (Faltan GOOGLE_ISSUER_ID o GOOGLE_SERVICE_ACCOUNT_EMAIL)');
+    throw new Error('Google Wallet no está configurado (Faltan GOOGLE_ISSUER_ID o GOOGLE_SA_EMAIL)');
   }
 
   const assetsDir = path.join(process.cwd(), 'wallet-assets', 'apple.pass');
-  let privateKey: string;
+  let privateKey = '';
 
-  try {
-    privateKey = fs.readFileSync(path.join(assetsDir, 'google_private.pem'), 'utf8');
-  } catch {
-    privateKey = Buffer.from(process.env.GOOGLE_PRIVATE_KEY_BASE64 || '', 'base64').toString('utf8');
+  if (process.env.GOOGLE_SA_PRIVATE_KEY) {
+    privateKey = process.env.GOOGLE_SA_PRIVATE_KEY.replace(/\\n/g, '\n');
+  } else if (process.env.GOOGLE_PRIVATE_KEY_BASE64) {
+    privateKey = Buffer.from(process.env.GOOGLE_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
+  } else {
+    try {
+      privateKey = fs.readFileSync(path.join(assetsDir, 'google_private.pem'), 'utf8');
+    } catch {}
   }
 
   if (!privateKey) {
     throw new Error('No se encontró la clave privada de Google Wallet');
   }
+
+  const algorithm = privateKey.includes('BEGIN EC') ? 'ES256' : 'RS256';
 
   const CLASS_SUFFIX = 'urban_eats_loyalty';
   const CLASS_ID = `${ISSUER_ID}.${CLASS_SUFFIX}`;
@@ -97,7 +103,7 @@ function buildGoogleWalletUrl(clientId: string, clientName: string, stamps: numb
     },
   };
 
-  const token = jwt.sign(claims, privateKey, { algorithm: 'ES256' });
+  const token = jwt.sign(claims, privateKey, { algorithm });
   return `https://pay.google.com/gp/v/save/${token}`;
 }
 

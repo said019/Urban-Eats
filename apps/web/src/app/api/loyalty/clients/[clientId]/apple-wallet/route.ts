@@ -76,21 +76,33 @@ async function buildApplePassBuffer(cardId: string, clientName: string, stamps: 
 
   buffers['pass.json'] = Buffer.from(JSON.stringify(passJson));
 
-  let signerCert: Buffer | string;
-  let signerKey: Buffer | string;
-  let wwdr: Buffer | string;
+  const resolveCert = (envPath: string | undefined, base64Env: string | undefined, defaultFile: string) => {
+    const candidatePaths = [
+      envPath && path.isAbsolute(envPath) ? envPath : null,
+      envPath ? path.join(process.cwd(), envPath) : null,
+      path.join(assetsDir, defaultFile),
+    ].filter(Boolean) as string[];
 
-  try {
-    signerCert = fs.readFileSync(path.join(assetsDir, 'pass.pem'));
-    signerKey = fs.readFileSync(path.join(assetsDir, 'pass.key'), 'utf8');
-    wwdr = fs.readFileSync(path.join(assetsDir, 'wwdr_rsa.pem'));
-  } catch {
-    signerCert = Buffer.from(process.env.APPLE_SIGNER_CERT_BASE64 || '', 'base64');
-    signerKey = Buffer.from(process.env.APPLE_SIGNER_KEY_BASE64 || '', 'base64').toString('utf8');
-    wwdr = Buffer.from(process.env.APPLE_WWDR_CERT_BASE64 || '', 'base64');
-  }
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) return fs.readFileSync(p);
+    }
 
-  const pass = new PKPass(buffers, { signerCert, signerKey, wwdr });
+    const b64 = base64Env || '';
+    if (b64) return Buffer.from(b64, 'base64');
+    throw new Error(`No se encontró ${defaultFile} ni en disco ni en ENV`);
+  };
+
+  const signerCert = resolveCert(process.env.APPLE_PASS_CERT, process.env.APPLE_SIGNER_CERT_BASE64, 'pass.pem');
+  const signerKey = resolveCert(process.env.APPLE_PASS_KEY, process.env.APPLE_SIGNER_KEY_BASE64, 'pass.key').toString('utf8');
+  const wwdr = resolveCert(process.env.APPLE_WWDR, process.env.APPLE_WWDR_CERT_BASE64, 'wwdr_rsa.pem');
+
+  const signerKeyPassphrase = process.env.APPLE_CERT_PASSWORD;
+  const pass = new PKPass(buffers, {
+    signerCert,
+    signerKey,
+    wwdr,
+    ...(signerKeyPassphrase ? { signerKeyPassphrase } : {}),
+  });
   return pass.getAsBuffer();
 }
 
