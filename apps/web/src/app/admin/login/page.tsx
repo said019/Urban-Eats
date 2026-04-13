@@ -15,10 +15,8 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
-
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
+      const res = await fetch(`/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

@@ -15,10 +15,8 @@ export default function AdminClientDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchClientStatus = async () => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
     try {
-      // Re-utilizamos la vista pública (que extrae todo lo necesario)
-      const res = await fetch(`${API_BASE}/api/loyalty/clients/${clientId}`);
+      const res = await fetch(`/api/loyalty/clients/${clientId}`);
       if (res.ok) {
         const data = await res.json();
         setClient(data);
@@ -44,10 +42,9 @@ export default function AdminClientDetailPage() {
 
     setActionLoading(true);
     const token = localStorage.getItem('admin_token');
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
     
     try {
-      const res = await fetch(`${API_BASE}/api/admin/clients/${clientId}/stamp`, {
+      const res = await fetch(`/api/admin/stamp/${clientId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

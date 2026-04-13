@@ -13,10 +13,9 @@ export default function AdminDashboardPage() {
   const fetchClients = async (query = '') => {
     setLoading(true);
     const token = localStorage.getItem('admin_token');
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
     
     try {
-      const res = await fetch(`${API_BASE}/api/admin/clients?search=${encodeURIComponent(query)}`, {
+      const res = await fetch(`/api/admin/clients-list?search=${encodeURIComponent(query)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
