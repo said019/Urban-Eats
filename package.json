@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
-    "build": "pnpm -r run build",
-    "start": "node start.cjs"
+    "build": "pnpm --filter web run build",
+    "start": "pnpm --filter web run start"
   },
   "engines": {
     "node": ">=18"

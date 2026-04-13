@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* No rewrites needed — API routes live inside Next.js now */
+  outputFileTracingIncludes: {
+    '/api/loyalty/clients/[clientId]/apple-wallet': ['./wallet-assets/**/*'],
+    '/api/loyalty/clients/[clientId]/google-wallet': ['./wallet-assets/**/*'],
+  },
 };
 
 export default nextConfig;
