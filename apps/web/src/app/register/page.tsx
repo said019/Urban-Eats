@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -9,6 +9,16 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({ name: '', phone: '', country_code: '+52' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mode, setMode] = useState<'register' | 'lookup'>('register');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedId = localStorage.getItem('urban_eats_client_id');
+      if (savedId) {
+        router.replace(`/card/${savedId}`);
+      }
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,18 +26,32 @@ export default function RegisterPage() {
     setError('');
 
     try {
+      if (mode === 'lookup') {
+        const res = await fetch(`/api/loyalty/lookup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: formData.phone, country_code: formData.country_code })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No encontramos tu tarjeta');
+        if (data.clientId) {
+          localStorage.setItem('urban_eats_client_id', data.clientId);
+          router.push(`/card/${data.clientId}`);
+        }
+        return;
+      }
+
       const res = await fetch(`/api/admin/clients`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error en el servidor');
-      
-      // Redirigir al cliente recién creado a su billetera.
-      // API devuelve: { success: true, clientId: 'UUID' }
+      if (!res.ok && res.status !== 409) throw new Error(data.error || 'Error en el servidor');
+
       if (data.clientId) {
+        localStorage.setItem('urban_eats_client_id', data.clientId);
         router.push(`/card/${data.clientId}`);
       }
     } catch (err: any) {
@@ -48,25 +72,50 @@ export default function RegisterPage() {
         animate={{ y: 0, opacity: 1 }} 
         className="w-full max-w-sm bg-black/40 backdrop-blur-md p-8 rounded-2xl border border-zinc-800 shadow-2xl"
       >
-        <div className="flex flex-col items-center mb-8 gap-3">
+        <div className="flex flex-col items-center mb-6 gap-3">
           <img src="/logo.jpeg" alt="Urban Eats Logo" className="w-20 h-20 rounded-xl" />
-          <h2 className="text-xl font-bold text-white text-center">Únete a Urban Eats<br/><span className="text-brand-orange neon-text text-sm tracking-widest uppercase">Rewards Club</span></h2>
+          <h2 className="text-xl font-bold text-white text-center">
+            {mode === 'register' ? 'Únete a Urban Eats' : 'Recupera tu tarjeta'}
+            <br/>
+            <span className="text-brand-orange neon-text text-sm tracking-widest uppercase">
+              {mode === 'register' ? 'Rewards Club' : 'Ingresa tu WhatsApp'}
+            </span>
+          </h2>
+        </div>
+
+        <div className="flex mb-6 rounded-xl bg-zinc-900 p-1 border border-zinc-800">
+          <button
+            type="button"
+            onClick={() => { setMode('register'); setError(''); }}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold tracking-widest transition-colors ${mode === 'register' ? 'bg-brand-orange text-black' : 'text-zinc-400'}`}
+          >
+            REGISTRARME
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMode('lookup'); setError(''); }}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold tracking-widest transition-colors ${mode === 'lookup' ? 'bg-brand-orange text-black' : 'text-zinc-400'}`}
+          >
+            YA TENGO TARJETA
+          </button>
         </div>
 
         {error && <div className="p-3 mb-6 bg-red-500/20 border border-red-500 text-red-100 text-sm rounded-lg text-center">{error}</div>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-xs text-zinc-400 font-bold tracking-widest pl-2 mb-1 block">TU NOMBRE</label>
-            <input 
-              required
-              type="text" 
-              placeholder="Ej. Sarah Juarez"
-              className="w-full bg-zinc-900 border border-zinc-800 text-white p-4 rounded-xl focus:border-brand-orange focus:outline-none transition-colors"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
+          {mode === 'register' && (
+            <div>
+              <label className="text-xs text-zinc-400 font-bold tracking-widest pl-2 mb-1 block">TU NOMBRE</label>
+              <input
+                required
+                type="text"
+                placeholder="Ej. Sarah Juarez"
+                className="w-full bg-zinc-900 border border-zinc-800 text-white p-4 rounded-xl focus:border-brand-orange focus:outline-none transition-colors"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+          )}
 
           <div className="flex gap-2">
             <div className="w-1/3">
@@ -110,12 +159,14 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <button 
+          <button
             disabled={loading}
-            type="submit" 
+            type="submit"
             className="w-full mt-4 py-4 rounded-xl bg-brand-orange text-black font-black tracking-widest hover:bg-white hover:text-black transition-colors disabled:opacity-50"
           >
-            {loading ? 'CREANDO PASAPORTE...' : 'OBTENER TARJETA DIGITAL'}
+            {loading
+              ? (mode === 'register' ? 'CREANDO PASAPORTE...' : 'BUSCANDO...')
+              : (mode === 'register' ? 'OBTENER TARJETA DIGITAL' : 'ENTRAR A MI TARJETA')}
           </button>
         </form>
       </motion.div>
