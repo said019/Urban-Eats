@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     // Si estamos en la ruta de login, no hay que checar nada.
-    if (pathname === '/admin/login') {
+    if (pathname === '/admin/login' || pathname === '/admin/setup') {
       setAuthorized(true);
       return;
     }
@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) return <div className="min-h-screen bg-black flex items-center justify-center text-zinc-500 font-bold tracking-widest text-sm">CARGANDO RECURSOS CORPORATIVOS...</div>;
 
   // Renderizar layout sólo si no estamos en login
-  if (pathname === '/admin/login') {
+  if (pathname === '/admin/login' || pathname === '/admin/setup') {
     return <>{children}</>;
   }
 
