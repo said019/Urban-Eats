@@ -9,17 +9,24 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET;
-    if (!SETUP_SECRET) {
-      return NextResponse.json(
-        { error: 'ADMIN_SETUP_SECRET no está configurado en el servidor.' },
-        { status: 503 }
-      );
-    }
-
     const { secret, email, password } = await request.json();
 
-    if (secret !== SETUP_SECRET) {
-      return NextResponse.json({ error: 'Secret inválido.' }, { status: 401 });
+    // Bootstrap mode: permitir sin secret si solo existe el admin semilla (o ninguno)
+    const SEED_HASH = '$2b$10$Ew.Y9D3wE6E8pX.B0J5qZeN/rN.mIt5j1Fj1X9L1P6g5/0X4m0xIu';
+    const countTotal = await pool.query('SELECT COUNT(*)::int AS n FROM admins');
+    const countReal = await pool.query('SELECT COUNT(*)::int AS n FROM admins WHERE password_hash != $1', [SEED_HASH]);
+    const isBootstrap = countTotal.rows[0].n === 0 || countReal.rows[0].n === 0;
+
+    if (!isBootstrap) {
+      if (!SETUP_SECRET) {
+        return NextResponse.json(
+          { error: 'ADMIN_SETUP_SECRET no está configurado en el servidor.' },
+          { status: 503 }
+        );
+      }
+      if (secret !== SETUP_SECRET) {
+        return NextResponse.json({ error: 'Secret inválido.' }, { status: 401 });
+      }
     }
 
     if (!email || !password || password.length < 6) {
