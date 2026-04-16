@@ -231,6 +231,33 @@ export default function CardPage() {
             </div>
           </motion.div>
         )}
+
+        {dbClientId && (
+          <motion.button
+            initial={{ y: 16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.55 }}
+            onClick={async () => {
+              const url = `${window.location.origin}/register?ref=${dbClientId}`;
+              const text = `¡Únete al Urban Eats Rewards Club y te regalo 1 sello! 🌭 ${url}`;
+              if (navigator.share) {
+                try {
+                  await navigator.share({ title: 'Urban Eats Rewards', text, url });
+                } catch {}
+              } else {
+                try {
+                  await navigator.clipboard.writeText(text);
+                  alert('¡Link copiado! Compártelo con tus amigos.');
+                } catch {
+                  prompt('Copia este link:', text);
+                }
+              }
+            }}
+            className="mt-4 w-full border border-brand-yellow/50 bg-brand-yellow/10 text-brand-yellow py-3 rounded-xl text-xs font-black tracking-widest hover:bg-brand-yellow hover:text-black transition-colors"
+          >
+            🎁 INVITA UN AMIGO · GANAN +1 SELLO CADA UNO
+          </motion.button>
+        )}
       </div>
 
       {/* Wallet Buttons */}

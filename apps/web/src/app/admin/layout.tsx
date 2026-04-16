@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, LayoutDashboard, Users, Gift } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, Gift, Megaphone, Cake } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -59,6 +59,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/rewards') ? 'bg-zinc-900 border border-zinc-800 text-brand-orange' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
             >
               <Gift className="w-4 h-4" /> Recompensas
+            </Link>
+            <Link
+              href="/admin/broadcast"
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/broadcast') ? 'bg-zinc-900 border border-zinc-800 text-brand-orange' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+            >
+              <Megaphone className="w-4 h-4" /> Push Masivo
+            </Link>
+            <Link
+              href="/admin/birthdays"
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/birthdays') ? 'bg-zinc-900 border border-zinc-800 text-pink-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+            >
+              <Cake className="w-4 h-4" /> Cumpleaños
             </Link>
           </nav>
         </div>

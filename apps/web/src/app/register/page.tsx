@@ -1,24 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: '', phone: '', country_code: '+52' });
+  const searchParams = useSearchParams();
+  const referralId = searchParams?.get('ref') || '';
+  const [formData, setFormData] = useState({ name: '', phone: '', country_code: '+52', birthday: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'register' | 'lookup'>('register');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !referralId) {
       const savedId = localStorage.getItem('urban_eats_client_id');
       if (savedId) {
         router.replace(`/card/${savedId}`);
       }
     }
-  }, [router]);
+  }, [router, referralId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +46,7 @@ export default function RegisterPage() {
       const res = await fetch(`/api/admin/clients`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, referred_by: referralId || undefined })
       });
 
       const data = await res.json();
@@ -82,6 +84,13 @@ export default function RegisterPage() {
             </span>
           </h2>
         </div>
+
+        {referralId && mode === 'register' && (
+          <div className="mb-4 p-3 rounded-xl bg-brand-orange/10 border border-brand-orange/50 text-center">
+            <p className="text-brand-orange text-xs font-black tracking-widest">¡VIENES INVITADO! 🎉</p>
+            <p className="text-white text-xs mt-1">Ganas +1 sello de regalo al registrarte</p>
+          </div>
+        )}
 
         <div className="flex mb-6 rounded-xl bg-zinc-900 p-1 border border-zinc-800">
           <button
@@ -158,6 +167,21 @@ export default function RegisterPage() {
               />
             </div>
           </div>
+
+          {mode === 'register' && (
+            <div>
+              <label className="text-xs text-zinc-400 font-bold tracking-widest pl-2 mb-1 block">
+                CUMPLEAÑOS (opcional · recibes premio en tu día 🎂)
+              </label>
+              <input
+                type="date"
+                max={new Date().toISOString().split('T')[0]}
+                className="w-full bg-zinc-900 border border-zinc-800 text-white p-4 rounded-xl focus:border-brand-orange focus:outline-none transition-colors"
+                value={formData.birthday}
+                onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+              />
+            </div>
+          )}
 
           <button
             disabled={loading}

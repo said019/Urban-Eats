@@ -35,7 +35,12 @@ export async function POST(
     }
 
     const { rows } = await pool.query(
-      'UPDATE clients SET stamps = stamps + 1 WHERE id = $1 RETURNING stamps',
+      `UPDATE clients
+       SET stamps = stamps + 1,
+           last_visit_at = now(),
+           total_visits = COALESCE(total_visits, 0) + 1
+       WHERE id = $1
+       RETURNING stamps`,
       [clientId]
     );
     const newStamps = rows[0].stamps;
