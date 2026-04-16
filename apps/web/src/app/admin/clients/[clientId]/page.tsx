@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, PlusCircle, RefreshCcw } from "lucide-react";
+import { ArrowLeft, PlusCircle, Send, Bug } from "lucide-react";
 import { StampGrid } from "@/components/StampGrid";
 
 export default function AdminClientDetailPage() {
@@ -13,6 +13,8 @@ export default function AdminClientDetailPage() {
   const [client, setClient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   const fetchClientStatus = async () => {
     try {
@@ -61,6 +63,40 @@ export default function AdminClientDetailPage() {
     }
   };
 
+  const handleForceSync = async () => {
+    setSyncing(true);
+    const token = localStorage.getItem('admin_token');
+    try {
+      const res = await fetch(`/api/admin/wallet-sync/${clientId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Push enviado a ${data.devices} dispositivo(s). Sellos actuales: ${data.stamps}`);
+      } else {
+        alert(data.error || 'Error al sincronizar');
+      }
+    } catch {
+      alert('Falla de red.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleDebug = async () => {
+    const token = localStorage.getItem('admin_token');
+    try {
+      const res = await fetch(`/api/admin/wallet-debug/${clientId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setDebugInfo(data);
+    } catch {
+      alert('Falla de red.');
+    }
+  };
+
   if (loading || !client) return <div className="p-10 font-bold text-zinc-500 tracking-widest text-sm">CARGANDO RECURSOS...</div>;
 
   return (
@@ -92,12 +128,41 @@ export default function AdminClientDetailPage() {
           </button>
           
           <button
-             disabled={true}
-             className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border border-zinc-700 bg-transparent text-zinc-500 font-bold tracking-widest cursor-not-allowed"
+            onClick={handleForceSync}
+            disabled={syncing}
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border border-brand-yellow bg-brand-yellow/10 text-brand-yellow font-bold tracking-widest hover:bg-brand-yellow hover:text-black transition-colors disabled:opacity-50"
           >
-             <RefreshCcw className="w-5 h-5" /> REINICIAR (Pronto)
+            <Send className="w-5 h-5" /> {syncing ? 'ENVIANDO...' : 'FORZAR SYNC WALLET'}
+          </button>
+
+          <button
+            onClick={handleDebug}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-zinc-700 bg-transparent text-zinc-400 text-xs font-bold tracking-widest hover:text-white hover:border-white transition-colors"
+          >
+            <Bug className="w-4 h-4" /> VER DIAGNÓSTICO
           </button>
         </div>
+
+        {debugInfo && (
+          <div className="mt-4 p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs">
+            <p className="text-brand-orange font-bold tracking-widest mb-2">DIAGNÓSTICO</p>
+            <p className="text-zinc-300 mb-3">{debugInfo.message}</p>
+            <div className="space-y-1 text-zinc-400 font-mono">
+              <p>Dispositivos Apple registrados: <span className="text-white font-bold">{debugInfo.deviceCount}</span></p>
+              <p>Updates recientes: <span className="text-white font-bold">{debugInfo.recentUpdates?.length || 0}</span></p>
+              <details className="mt-2">
+                <summary className="cursor-pointer text-brand-yellow">ENV vars configuradas</summary>
+                <pre className="mt-2 text-[10px] overflow-x-auto">{JSON.stringify(debugInfo.env, null, 2)}</pre>
+              </details>
+              {debugInfo.registeredDevices?.length > 0 && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-brand-yellow">Dispositivos</summary>
+                  <pre className="mt-2 text-[10px] overflow-x-auto">{JSON.stringify(debugInfo.registeredDevices, null, 2)}</pre>
+                </details>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

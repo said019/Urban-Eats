@@ -80,7 +80,7 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
     foregroundColor: 'rgb(255, 255, 255)',
     backgroundColor: 'rgb(26, 15, 5)',
     labelColor: 'rgb(255, 138, 0)',
-    webServiceURL: `${serverUrl}/api/wallet/`,
+    webServiceURL: `${serverUrl}/api/wallet`,
     authenticationToken: AUTH_TOKEN,
     storeCard: {
       headerFields: [
