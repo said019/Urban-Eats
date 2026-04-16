@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { StampGrid } from "@/components/StampGrid";
 import { RedeemModal } from "@/components/RedeemModal";
 import { motion } from "framer-motion";
+import QRCode from "qrcode";
 
 export default function CardPage() {
   const params = useParams();
@@ -14,6 +16,7 @@ export default function CardPage() {
   const [stamps, setStamps] = useState(0);
   const [clientName, setClientName] = useState("Cargando...");
   const [isLoading, setIsLoading] = useState(true);
+  const [qrDataUrl, setQrDataUrl] = useState("");
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [redeemType, setRedeemType] = useState<'discount' | 'free' | null>(null);
@@ -42,6 +45,26 @@ export default function CardPage() {
       })
       .finally(() => setIsLoading(false));
   }, [clientId]);
+
+  useEffect(() => {
+    if (!dbClientId) {
+      setQrDataUrl("");
+      return;
+    }
+
+    const qrValue = `${window.location.origin}/admin/clients/${encodeURIComponent(dbClientId)}`;
+    QRCode.toDataURL(qrValue, {
+      errorCorrectionLevel: "M",
+      margin: 2,
+      width: 184,
+      color: {
+        dark: "#111111",
+        light: "#ffffff",
+      },
+    })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(""));
+  }, [dbClientId]);
 
   // Background neon flares
   const backgroundFlares = (
@@ -92,7 +115,7 @@ export default function CardPage() {
         } else {
           alert('Error: ' + data.error);
         }
-      } catch (err) {
+      } catch {
         alert("Ocurrió un error conectando con el servidor de la tienda.");
       }
     } else {
@@ -107,6 +130,17 @@ export default function CardPage() {
     setRedeemType(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center px-6">
+        {backgroundFlares}
+        <p className="text-zinc-500 font-bold tracking-widest text-sm">
+          CARGANDO TARJETA...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen relative flex flex-col items-center pt-12 px-6 pb-20 justify-between">
       {backgroundFlares}
@@ -118,7 +152,13 @@ export default function CardPage() {
           animate={{ y: 0, opacity: 1 }}
           className="flex flex-col items-center gap-2 mb-8"
         >
-          <img src="/logo.jpeg" alt="Urban Eats Logo" className="w-24 h-24 object-cover rounded-xl shadow-[0_0_20px_rgba(255,184,0,0.5)] border-2 border-brand-orange" />
+          <Image
+            src="/logo.jpeg"
+            alt="Urban Eats Logo"
+            width={96}
+            height={96}
+            className="w-24 h-24 object-cover rounded-xl shadow-[0_0_20px_rgba(255,184,0,0.5)] border-2 border-brand-orange"
+          />
         </motion.div>
 
         {/* Welcome Text */}
@@ -163,6 +203,34 @@ export default function CardPage() {
         <p className="mt-6 text-xs text-zinc-500 font-medium tracking-wide">
           TAP A GLOWING REWARD TO REDEEM IN-STORE!
         </p>
+
+        {qrDataUrl && (
+          <motion.div
+            initial={{ y: 16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 w-full border border-zinc-800 bg-zinc-950/70 rounded-lg p-4 flex items-center gap-4"
+          >
+            <div className="shrink-0 bg-white p-2 rounded-md">
+              <Image
+                src={qrDataUrl}
+                alt="QR para agregar sello"
+                width={112}
+                height={112}
+                unoptimized
+                className="w-28 h-28"
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="text-brand-orange font-black tracking-widest text-xs">
+                QR DE SELLO
+              </p>
+              <p className="mt-2 text-zinc-400 text-xs font-medium leading-relaxed">
+                Muéstralo en caja para que el admin agregue tu sello.
+              </p>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Wallet Buttons */}
