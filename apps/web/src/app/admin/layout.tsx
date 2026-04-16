@@ -13,15 +13,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     // Si estamos en la ruta de login, no hay que checar nada.
     if (pathname === '/admin/login' || pathname === '/admin/setup') {
-      setAuthorized(true);
+      queueMicrotask(() => setAuthorized(true));
       return;
     }
 
     const token = localStorage.getItem('admin_token');
     if (!token) {
-      router.push('/admin/login');
+      queueMicrotask(() => setAuthorized(false));
+      router.replace(`/admin/login?next=${encodeURIComponent(pathname || '/admin')}`);
     } else {
-      setAuthorized(true);
+      queueMicrotask(() => setAuthorized(true));
     }
   }, [pathname, router]);
 

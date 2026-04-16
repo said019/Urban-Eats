@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+function safeNextPath(value: string | null): string {
+  if (!value || !value.startsWith('/admin')) return '/admin';
+  if (value.startsWith('/admin/login') || value.startsWith('/admin/setup')) return '/admin';
+  return value;
+}
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -27,10 +33,11 @@ export default function AdminLoginPage() {
       
       // Guardar JWT
       localStorage.setItem('admin_token', data.token);
-      router.push('/admin');
+      const next = new URLSearchParams(window.location.search).get('next');
+      router.push(safeNextPath(next));
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Autenticación fallida');
     } finally {
       setLoading(false);
     }
