@@ -52,7 +52,7 @@ export default function CardPage() {
       return;
     }
 
-    const qrValue = `${window.location.origin}/admin/clients/${encodeURIComponent(dbClientId)}`;
+    const qrValue = `${window.location.origin}/scan/${encodeURIComponent(dbClientId)}`;
     QRCode.toDataURL(qrValue, {
       errorCorrectionLevel: "M",
       margin: 2,

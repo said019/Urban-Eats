@@ -17,5 +17,5 @@ export function getWalletQrOrigin(fallbackOrigin?: string): string {
 }
 
 export function buildWalletQrValue(clientId: string, fallbackOrigin?: string): string {
-  return `${getWalletQrOrigin(fallbackOrigin)}/admin/clients/${encodeURIComponent(clientId)}`;
+  return `${getWalletQrOrigin(fallbackOrigin)}/scan/${encodeURIComponent(clientId)}`;
 }
