@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import pool from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'URBAN_EATS_DEFAULT_SUPER_SECRET';
+
 // POST /api/auth/setup-admin — Crea o resetea un admin.
-// Protegido por ADMIN_SETUP_SECRET en ENV (tú lo defines en Railway).
+// Auth: ADMIN_SETUP_SECRET, valid admin JWT, or bootstrap mode.
 export async function POST(request: NextRequest) {
   try {
     const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET;
@@ -13,20 +16,29 @@ export async function POST(request: NextRequest) {
 
     // Bootstrap mode: permitir sin secret si solo existe el admin semilla (o ninguno)
     const SEED_HASH = '$2b$10$Ew.Y9D3wE6E8pX.B0J5qZeN/rN.mIt5j1Fj1X9L1P6g5/0X4m0xIu';
-    const countTotal = await pool.query('SELECT COUNT(*)::int AS n FROM admins');
     const countReal = await pool.query('SELECT COUNT(*)::int AS n FROM admins WHERE password_hash != $1', [SEED_HASH]);
-    const isBootstrap = countTotal.rows[0].n === 0 || countReal.rows[0].n === 0;
+    const isBootstrap = countReal.rows[0].n === 0;
 
-    if (!isBootstrap) {
-      if (!SETUP_SECRET) {
-        return NextResponse.json(
-          { error: 'ADMIN_SETUP_SECRET no está configurado en el servidor.' },
-          { status: 503 }
-        );
+    // Check auth: bootstrap OR SETUP_SECRET OR valid admin JWT
+    let authorized = isBootstrap;
+
+    if (!authorized && SETUP_SECRET && secret === SETUP_SECRET) {
+      authorized = true;
+    }
+
+    if (!authorized) {
+      const authHeader = request.headers.get('authorization') || '';
+      const token = authHeader.replace('Bearer ', '');
+      if (token) {
+        try {
+          jwt.verify(token, JWT_SECRET);
+          authorized = true;
+        } catch {}
       }
-      if (secret !== SETUP_SECRET) {
-        return NextResponse.json({ error: 'Secret inválido.' }, { status: 401 });
-      }
+    }
+
+    if (!authorized) {
+      return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
     }
 
     if (!email || !password || password.length < 6) {
