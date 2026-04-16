@@ -45,7 +45,7 @@ export async function GET(
 
     const accessToken = await getAccessToken(SERVICE_EMAIL, privateKey);
     await ensureLoyaltyClass(accessToken, classId, origin);
-    await upsertLoyaltyObject(accessToken, classId, objectId, client.id, client.name, client.stamps);
+    await upsertLoyaltyObject(accessToken, classId, objectId, client.id, client.name, client.stamps, origin);
 
     const saveUrl = buildSaveUrl(
       SERVICE_EMAIL,

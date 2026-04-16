@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import http2 from 'http2';
 import jwt from 'jsonwebtoken';
+import { buildWalletQrValue } from './wallet-qr';
 
 const AUTH_TOKEN = process.env.APPLE_AUTH_TOKEN || 'URBAN_EATS_WALLET_TOKEN';
 
@@ -60,6 +61,13 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
 
   const firstName = (clientName || '').trim().split(/\s+/)[0] || clientName;
   const serverUrl = process.env.SERVER_URL || 'https://urban-eats-production.up.railway.app';
+  const qrValue = buildWalletQrValue(cardId, serverUrl);
+  const qrBarcode = {
+    format: 'PKBarcodeFormatQR',
+    message: qrValue,
+    messageEncoding: 'iso-8859-1',
+    altText: 'Escanear para sello',
+  };
 
   const passJson = {
     formatVersion: 1,
@@ -109,12 +117,8 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
         },
       ],
     },
-    barcode: {
-      format: 'PKBarcodeFormatQR',
-      message: cardId,
-      messageEncoding: 'iso-8859-1',
-      altText: firstName,
-    },
+    barcode: qrBarcode,
+    barcodes: [qrBarcode],
   };
 
   buffers['pass.json'] = Buffer.from(JSON.stringify(passJson));

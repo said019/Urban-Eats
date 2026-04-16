@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import fs from 'fs';
+import { buildWalletQrValue } from './wallet-qr';
 
 export const WALLET_API = 'https://walletobjects.googleapis.com/walletobjects/v1';
 export const CLASS_SUFFIX = 'urban_eats_loyalty_v1';
@@ -89,8 +90,16 @@ export async function ensureLoyaltyClass(accessToken: string, classId: string, o
   }
 }
 
-function buildObjectBody(classId: string, objectId: string, clientId: string, clientName: string, stamps: number) {
+function buildObjectBody(
+  classId: string,
+  objectId: string,
+  clientId: string,
+  clientName: string,
+  stamps: number,
+  origin?: string
+) {
   const safeStamps = Math.max(0, Math.min(Number(stamps) || 0, 10));
+  const qrValue = buildWalletQrValue(clientId, origin);
   return {
     id: objectId,
     classId,
@@ -103,8 +112,8 @@ function buildObjectBody(classId: string, objectId: string, clientId: string, cl
     },
     barcode: {
       type: 'QR_CODE',
-      value: clientId,
-      alternateText: clientName,
+      value: qrValue,
+      alternateText: 'Escanear para sello',
     },
     textModulesData: [
       {
@@ -127,9 +136,10 @@ export async function upsertLoyaltyObject(
   objectId: string,
   clientId: string,
   clientName: string,
-  stamps: number
+  stamps: number,
+  origin?: string
 ) {
-  const body = buildObjectBody(classId, objectId, clientId, clientName, stamps);
+  const body = buildObjectBody(classId, objectId, clientId, clientName, stamps, origin);
 
   // Try PATCH first (if exists)
   const patchRes = await fetch(`${WALLET_API}/loyaltyObject/${encodeURIComponent(objectId)}`, {
@@ -169,7 +179,7 @@ export function buildSaveUrl(
   origin: string
 ): string {
   const algorithm = privateKey.includes('BEGIN EC') ? 'ES256' : 'RS256';
-  const loyaltyObject = buildObjectBody(classId, objectId, clientId, clientName, stamps);
+  const loyaltyObject = buildObjectBody(classId, objectId, clientId, clientName, stamps, origin);
 
   const claims = {
     iss: serviceEmail,
@@ -201,7 +211,7 @@ export async function updateGoogleWalletStamps(clientId: string, clientName: str
   try {
     const accessToken = await getAccessToken(SERVICE_EMAIL, privateKey);
     await ensureLoyaltyClass(accessToken, classId, origin);
-    await upsertLoyaltyObject(accessToken, classId, objectId, clientId, clientName, stamps);
+    await upsertLoyaltyObject(accessToken, classId, objectId, clientId, clientName, stamps, origin);
   } catch (err: any) {
     console.error('[Google Wallet] Error actualizando:', err.message);
   }
