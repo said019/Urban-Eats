@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, PlusCircle, ArrowRight } from "lucide-react";
+import { Search, PlusCircle, ArrowRight, QrCode } from "lucide-react";
+import { QrScanner } from "@/components/QrScanner";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [clients, setClients] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const fetchClients = async (query = '') => {
     setLoading(true);
@@ -50,14 +52,30 @@ export default function AdminDashboardPage() {
           <p className="text-zinc-500 font-medium tracking-wide text-sm mt-1">Busca por teléfono o nombre para otorgar sellos.</p>
         </div>
         
-        {/* En un caso real podrías permitir a los administradores registrar desde el panel */}
-        <button 
-          onClick={() => window.open('/register', '_blank')}
-          className="flex items-center gap-2 bg-brand-yellow/10 border border-brand-yellow text-brand-yellow px-4 py-3 rounded-xl font-bold tracking-widest text-xs hover:bg-brand-yellow hover:text-black transition-colors"
-        >
-          <PlusCircle className="w-4 h-4" /> REGISTRAR NUEVO (LINK)
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setScannerOpen(true)}
+            className="flex items-center gap-2 bg-brand-orange text-black px-4 py-3 rounded-xl font-bold tracking-widest text-xs hover:bg-white transition-colors"
+          >
+            <QrCode className="w-4 h-4" /> ESCANEAR QR
+          </button>
+          <button
+            onClick={() => window.open('/register', '_blank')}
+            className="flex items-center gap-2 bg-brand-yellow/10 border border-brand-yellow text-brand-yellow px-4 py-3 rounded-xl font-bold tracking-widest text-xs hover:bg-brand-yellow hover:text-black transition-colors"
+          >
+            <PlusCircle className="w-4 h-4" /> NUEVO CLIENTE
+          </button>
+        </div>
       </div>
+
+      <QrScanner
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScan={(clientId) => {
+          setScannerOpen(false);
+          router.push(`/admin/clients/${clientId}`);
+        }}
+      />
 
       {/* Caja de Búsqueda */}
       <div className="relative">

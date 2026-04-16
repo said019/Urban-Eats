@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, Gift } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -46,13 +47,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-xl">URBAN POS</span>
           </div>
           <nav className="flex flex-col gap-2">
-            <div className="px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl font-bold text-sm tracking-wide text-brand-yellow">
-              📋 Lista de Clientes
-            </div>
-            {/* Espacio para más secciones: Recompensas, Stats */}
-            <div className="px-4 py-3 rounded-xl font-medium text-sm tracking-wide text-zinc-500 hover:text-white cursor-not-allowed">
-              ⚙️ Recompensas (Próximamente)
-            </div>
+            <Link
+              href="/admin"
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname === '/admin' ? 'bg-zinc-900 border border-zinc-800 text-brand-yellow' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+            >
+              <Users className="w-4 h-4" /> Clientes
+            </Link>
+            <Link
+              href="/admin/rewards"
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/rewards') ? 'bg-zinc-900 border border-zinc-800 text-brand-orange' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+            >
+              <Gift className="w-4 h-4" /> Recompensas
+            </Link>
           </nav>
         </div>
         
