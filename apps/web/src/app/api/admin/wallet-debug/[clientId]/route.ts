@@ -25,14 +25,14 @@ export async function GET(
   const { clientId } = await params;
 
   const devices = await pool.query(
-    `SELECT id, device_id, LEFT(push_token, 12) || '…' AS push_preview, pass_type_id, registered_at, updated_at
-     FROM apple_wallet_devices WHERE loyalty_card_id = $1 ORDER BY updated_at DESC`,
+    `SELECT id, device_id, LEFT(push_token, 12) || '…' AS push_preview, pass_type_id, created_at, updated_at
+     FROM apple_wallet_devices WHERE loyalty_card_id::text = $1 ORDER BY updated_at DESC`,
     [clientId]
   );
 
   const updates = await pool.query(
     `SELECT stamps_new, updated_at FROM apple_wallet_updates
-     WHERE loyalty_card_id = $1 ORDER BY updated_at DESC LIMIT 10`,
+     WHERE loyalty_card_id::text = $1 ORDER BY updated_at DESC LIMIT 10`,
     [clientId]
   );
 
