@@ -88,7 +88,13 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
       ],
       primaryFields: [],
       secondaryFields: [
-        { key: 'stamps', label: 'SELLOS', value: `${stamps} / 10`, textAlignment: 'PKTextAlignmentLeft' },
+        {
+          key: 'stamps',
+          label: 'SELLOS',
+          value: `${stamps} / 10`,
+          textAlignment: 'PKTextAlignmentLeft',
+          changeMessage: '¡Ahora tienes %@ sellos! 🌭',
+        },
         {
           key: 'reward',
           label: 'PRÓXIMO PREMIO',
@@ -99,6 +105,7 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
               ? '25% OFF disponible'
               : `Faltan ${5 - stamps} para 25% OFF`,
           textAlignment: 'PKTextAlignmentRight',
+          changeMessage: '%@',
         },
       ],
       auxiliaryFields: [],
