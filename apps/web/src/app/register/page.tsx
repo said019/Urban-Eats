@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { SocialRequirements } from "@/components/SocialRequirements";
 
 export default function RegisterPage() {
   return (
@@ -92,6 +93,8 @@ function RegisterForm() {
             </span>
           </h2>
         </div>
+
+        {mode === 'register' && <SocialRequirements variant="banner" />}
 
         {referralId && mode === 'register' && (
           <div className="mb-4 p-3 rounded-xl bg-brand-orange/10 border border-brand-orange/50 text-center">

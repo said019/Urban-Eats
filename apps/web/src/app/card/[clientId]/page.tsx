@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { StampGrid } from "@/components/StampGrid";
 import { RedeemModal } from "@/components/RedeemModal";
+import { SocialRequirements } from "@/components/SocialRequirements";
 import { motion } from "framer-motion";
 import QRCode from "qrcode";
 
@@ -231,6 +232,18 @@ export default function CardPage() {
             </div>
           </motion.div>
         )}
+
+        <motion.div
+          initial={{ y: 16, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.52 }}
+          className="mt-4 w-full"
+        >
+          <p className="text-center text-xs text-zinc-500 mb-2 tracking-wide">
+            Tu tarjeta solo suma sellos si nos sigues:
+          </p>
+          <SocialRequirements variant="compact" />
+        </motion.div>
 
         {dbClientId && (
           <motion.button
