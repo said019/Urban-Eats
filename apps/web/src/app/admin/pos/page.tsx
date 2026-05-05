@@ -10,16 +10,16 @@ const RAMEN_FOR_REWARD = 6;
 
 type Product = {
   id: string;
-  category_key: string;
+  category_id: string;
   category_name: string;
   category_color: string;
+  is_ramen: boolean;
   name: string;
   cost: number;
   price: number;
   stock: number;
-  is_ramen: boolean;
   is_service: boolean;
-  active: boolean;
+  is_active: boolean;
 };
 
 type CartItem = Product & { qty: number };
@@ -33,17 +33,17 @@ type ApiClient = {
 };
 
 type SaleSummary = {
-  id: string;
+  id: number;
   created_at: string;
   subtotal: number;
   discount: number;
   total: number;
-  cost_total: number;
+  total_cost: number;
   profit: number;
   payment_method: string;
   ramen_qty: number;
   reward_used: boolean;
-  client_id: string | null;
+  client_uuid: string | null;
   client_name: string | null;
   items: { product_id: string; product_name: string; qty: number; unit_price: number }[];
 };
@@ -74,7 +74,7 @@ export default function POSPage() {
       if (r.ok) {
         const data: Product[] = await r.json();
         setProducts(data);
-        if (!activeCat && data.length > 0) setActiveCat(data[0].category_key);
+        if (!activeCat && data.length > 0) setActiveCat(data[0].category_id);
       }
     } finally {
       setLoadingProducts(false);
@@ -92,13 +92,13 @@ export default function POSPage() {
 
   const categories = useMemo(() => {
     const map = new Map<string, { key: string; name: string; color: string }>();
-    products.forEach((p) => { if (!map.has(p.category_key)) map.set(p.category_key, { key: p.category_key, name: p.category_name, color: p.category_color }); });
+    products.forEach((p) => { if (!map.has(p.category_id)) map.set(p.category_id, { key: p.category_id, name: p.category_name, color: p.category_color }); });
     return Array.from(map.values());
   }, [products]);
 
   const visibleProducts = useMemo(() => {
     if (search) return products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
-    return products.filter((p) => p.category_key === activeCat);
+    return products.filter((p) => p.category_id === activeCat);
   }, [products, search, activeCat]);
 
   const addToCart = (p: Product) => {
@@ -141,7 +141,7 @@ export default function POSPage() {
         method: 'POST',
         headers: { ...tokenHeader(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: currentCustomer?.id || null,
+          client_uuid: currentCustomer?.id || null,
           client_name: currentCustomer?.name || null,
           payment_method: method,
           use_reward: useReward && canUseReward,

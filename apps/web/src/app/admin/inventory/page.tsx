@@ -7,16 +7,16 @@ import {
 
 type Product = {
   id: string;
-  category_key: string;
+  category_id: string;
   category_name: string;
   category_color: string;
+  is_ramen: boolean;
   name: string;
   cost: number;
   price: number;
   stock: number;
-  is_ramen: boolean;
   is_service: boolean;
-  active: boolean;
+  is_active: boolean;
 };
 
 const tokenHeader = () => {
@@ -50,14 +50,14 @@ export default function InventoryPage() {
 
   const categories = useMemo(() => {
     const map = new Map<string, { key: string; name: string; color: string }>();
-    tangible.forEach((p) => { if (!map.has(p.category_key)) map.set(p.category_key, { key: p.category_key, name: p.category_name, color: p.category_color }); });
+    tangible.forEach((p) => { if (!map.has(p.category_id)) map.set(p.category_id, { key: p.category_id, name: p.category_name, color: p.category_color }); });
     return Array.from(map.values());
   }, [tangible]);
 
   const filtered = tangible.filter((i) => {
     if (filter === 'all') return true;
     if (filter === 'low') return i.stock <= 3;
-    return i.category_key === filter;
+    return i.category_id === filter;
   });
 
   const patchProduct = async (id: string, body: Partial<Product> & { stock_delta?: number }) => {
