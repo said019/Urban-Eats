@@ -154,11 +154,12 @@ export default function CardPage() {
           className="flex flex-col items-center gap-2 mb-8"
         >
           <Image
-            src="/logo.jpeg"
+            src="/logo.jpg"
             alt="Bunsik Ramen Logo"
-            width={96}
-            height={96}
-            className="w-24 h-24 object-cover rounded-xl shadow-[0_0_20px_rgba(255,184,0,0.5)] border-2 border-brand-orange"
+            width={320}
+            height={160}
+            priority
+            className="w-56 h-auto object-contain drop-shadow-[0_0_24px_rgba(244,63,94,0.45)]"
           />
         </motion.div>
 

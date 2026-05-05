@@ -45,7 +45,7 @@ export const RedeemModal = ({ isOpen, onClose, onConfirm, type, loading }: Redee
                     <span className="text-sm font-bold text-brand-yellow neon-text">OFF</span>
                   </div>
                 ) : (
-                  <img src="/logo.jpeg" alt="Bunsik Ramen Premio" className="w-[80%] h-[80%] object-cover rounded-full shadow-[0_0_20px_var(--glow-orange)] z-10" />
+                  <img src="/logo.jpg" alt="Bunsik Ramen Premio" className="w-[80%] h-auto object-contain z-10 drop-shadow-[0_0_18px_rgba(244,63,94,0.55)]" />
                 )}
               </div>
 
