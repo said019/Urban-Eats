@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const res = await sendWalletPush(device.push_token, {
       alert: {
         title: '¡Feliz cumpleaños! 🎂',
-        body: `${firstName}, tienes un Perro GRATIS de regalo. Ven hoy a Urban Eats. 🌭`,
+        body: `${firstName}, tienes un RAMEN GRATIS de regalo. Ven hoy a Bunsik Ramen. 🍜`,
       },
     });
     if (res.ok) sent++;

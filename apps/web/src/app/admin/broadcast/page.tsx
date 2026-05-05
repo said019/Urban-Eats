@@ -11,10 +11,10 @@ export default function BroadcastPage() {
   const [result, setResult] = useState<any>(null);
 
   const presets = [
-    { title: 'Urban Eats 🌭', body: '¡Martes 2x1 en todos nuestros hot dogs! Solo hoy.' },
-    { title: 'Urban Eats 🔥', body: 'Happy Hour 3pm-5pm: doble sello en cada compra.' },
-    { title: 'Urban Eats ✨', body: 'Nuevo en el menú: ¡prueba el perro de la casa!' },
-    { title: 'Urban Eats 💛', body: '¡Te extrañamos! Ven esta semana y llévate un sello bonus.' },
+    { title: 'Bunsik Ramen 🍜', body: '¡Martes 2x1 en todos nuestros ramens! Solo hoy.' },
+    { title: 'Bunsik Ramen 🔥', body: 'Happy Hour 3pm-5pm: doble sello en cada compra.' },
+    { title: 'Bunsik Ramen ✨', body: 'Nuevo en el menú: ¡prueba el ramen de la casa!' },
+    { title: 'Bunsik Ramen 💛', body: '¡Te extrañamos! Ven esta semana y llévate un sello bonus.' },
   ];
 
   const send = async () => {
@@ -95,7 +95,7 @@ export default function BroadcastPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={60}
-            placeholder="Urban Eats 🌭"
+            placeholder="Bunsik Ramen 🍜"
             className="w-full bg-zinc-950 border border-zinc-800 text-white p-3 rounded-xl focus:border-brand-orange focus:outline-none"
           />
         </div>

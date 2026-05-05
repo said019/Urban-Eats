@@ -1,11 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f1115; /* Dark background */
-  --foreground: #f4f4f5; /* Light text */
-  --brand-orange: #ff5e00;
-  --brand-yellow: #ffb800;
-  --glow-orange: rgba(255, 94, 0, 0.4);
+  --background: #14040c;            /* Deep plum/black */
+  --foreground: #fce7f3;            /* Pink-50 text */
+  --brand-orange: #EC4899;          /* Bunsik pink (was orange) */
+  --brand-yellow: #FB7185;          /* Rose-400 (was yellow) */
+  --brand-pink: #EC4899;
+  --brand-rose: #F43F5E;
+  --brand-deep: #831843;
+  --glow-orange: rgba(236, 72, 153, 0.45);
 }
 
 @theme inline {
@@ -13,12 +16,15 @@
   --color-foreground: var(--foreground);
   --color-brand-orange: var(--brand-orange);
   --color-brand-yellow: var(--brand-yellow);
+  --color-brand-pink: var(--brand-pink);
+  --color-brand-rose: var(--brand-rose);
+  --color-brand-deep: var(--brand-deep);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
@@ -28,7 +34,7 @@ body {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(236, 72, 153, 0.15);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   }
 

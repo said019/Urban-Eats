@@ -33,7 +33,7 @@ export async function POST(
     const { name, stamps } = rows[0];
     await notifyStampChange(clientId, name, stamps, {
       alert: {
-        title: 'Urban Eats Rewards',
+        title: 'Bunsik Rewards',
         body: `Tarjeta sincronizada · ${stamps} de 10 sellos`,
       },
     });

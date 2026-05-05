@@ -23,7 +23,7 @@ export async function POST(
       return NextResponse.json({
         success: true,
         newStamps: stamps,
-        message: '25% de descuento aplicado. ¡Sigue sumando para tu Perro Gratis!',
+        message: '25% de descuento aplicado. ¡Sigue sumando para tu Ramen Gratis!',
       });
     }
 
@@ -31,14 +31,14 @@ export async function POST(
       await pool.query('UPDATE clients SET stamps = 0 WHERE id = $1', [clientId]);
       notifyStampChange(clientId, name, 0, {
         alert: {
-          title: 'Urban Eats Rewards',
-          body: '¡Canjeaste tu Perro Gratis! Tarjeta reiniciada.',
+          title: 'Bunsik Rewards',
+          body: '¡Canjeaste tu Ramen Gratis! Tarjeta reiniciada.',
         },
       }).catch((err) => console.error('[Redeem] Notify error:', err));
       return NextResponse.json({
         success: true,
         newStamps: 0,
-        message: '¡Perro Gratis canjeado! Tarjeta reiniciada.',
+        message: '¡Ramen Gratis canjeado! Tarjeta reiniciada.',
         reset: true,
       });
     }

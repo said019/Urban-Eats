@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         const { name: refName, stamps: refStamps } = updated.rows[0];
         notifyStampChange(validReferrer, refName, refStamps, {
           alert: {
-            title: 'Urban Eats Rewards',
+            title: 'Bunsik Rewards',
             body: `¡${name.split(' ')[0]} se unió con tu invitación! +1 sello para ti 🎉`,
           },
         }).catch((err) => console.error('[Register] Referrer notify error:', err));

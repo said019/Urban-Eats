@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, LayoutDashboard, Users, Gift, Megaphone, Cake } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, Gift, Megaphone, Cake, ShoppingCart, Package } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -45,9 +45,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6">
           <div className="flex items-center gap-3 mb-10 text-brand-orange neon-text font-black tracking-widest">
             <LayoutDashboard className="w-6 h-6" />
-            <span className="text-xl">URBAN POS</span>
+            <span className="text-xl">BUNSIK POS</span>
           </div>
           <nav className="flex flex-col gap-2">
+            <Link
+              href="/admin/pos"
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/pos') ? 'bg-pink-500/10 border border-pink-500/40 text-pink-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+            >
+              <ShoppingCart className="w-4 h-4" /> Punto de Venta
+            </Link>
+            <Link
+              href="/admin/inventory"
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/inventory') ? 'bg-pink-500/10 border border-pink-500/40 text-pink-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+            >
+              <Package className="w-4 h-4" /> Inventario
+            </Link>
             <Link
               href="/admin"
               className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname === '/admin' ? 'bg-zinc-900 border border-zinc-800 text-brand-yellow' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
@@ -91,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         
         {/* Mobile Header (Fallback para celulares de cajeros) */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20">
-          <span className="font-black tracking-widest text-brand-orange text-lg">URBAN POS</span>
+          <span className="font-black tracking-widest text-brand-orange text-lg">BUNSIK POS</span>
           <button onClick={handleLogout} className="p-2 text-zinc-400 hover:text-red-400">
             <LogOut className="w-5 h-5" />
           </button>

@@ -118,7 +118,7 @@ export default function RewardsPage() {
             </div>
           </div>
           <div>
-            <label className="text-xs text-zinc-400 font-bold tracking-widest mb-1 block">VALOR (ej. "25" o "Perro Gratis")</label>
+            <label className="text-xs text-zinc-400 font-bold tracking-widest mb-1 block">VALOR (ej. "25" o "Ramen Gratis")</label>
             <input
               value={form.value}
               onChange={(e) => setForm({ ...form, value: e.target.value })}

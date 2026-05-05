@@ -155,7 +155,7 @@ export default function CardPage() {
         >
           <Image
             src="/logo.jpeg"
-            alt="Urban Eats Logo"
+            alt="Bunsik Ramen Logo"
             width={96}
             height={96}
             className="w-24 h-24 object-cover rounded-xl shadow-[0_0_20px_rgba(255,184,0,0.5)] border-2 border-brand-orange"
@@ -179,7 +179,7 @@ export default function CardPage() {
            transition={{ delay: 0.3 }}
            className="w-full flex justify-center mb-2"
         >
-          <h3 className="text-zinc-400 font-bold tracking-widest text-xs">URBAN REWARDS</h3>
+          <h3 className="text-zinc-400 font-bold tracking-widest text-xs">BUNSIK REWARDS</h3>
         </motion.div>
         
         <motion.div
@@ -252,10 +252,10 @@ export default function CardPage() {
             transition={{ delay: 0.55 }}
             onClick={async () => {
               const url = `${window.location.origin}/register?ref=${dbClientId}`;
-              const text = `¡Únete al Urban Eats Rewards Club y te regalo 1 sello! 🌭 ${url}`;
+              const text = `¡Únete al Bunsik Rewards Club y te regalo 1 sello! 🍜 ${url}`;
               if (navigator.share) {
                 try {
-                  await navigator.share({ title: 'Urban Eats Rewards', text, url });
+                  await navigator.share({ title: 'Bunsik Rewards', text, url });
                 } catch {}
               } else {
                 try {

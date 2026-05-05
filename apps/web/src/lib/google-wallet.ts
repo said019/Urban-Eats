@@ -61,12 +61,12 @@ export async function ensureLoyaltyClass(accessToken: string, classId: string, o
 
   const classBody = {
     id: classId,
-    issuerName: 'Urban Eats',
-    programName: 'Urban Eats Rewards',
+    issuerName: 'Bunsik Ramen',
+    programName: 'Bunsik Rewards',
     programLogo: {
       sourceUri: { uri: `${origin}/logo.jpeg` },
       contentDescription: {
-        defaultValue: { language: 'es-MX', value: 'Urban Eats' },
+        defaultValue: { language: 'es-MX', value: 'Bunsik Ramen' },
       },
     },
     hexBackgroundColor: '#1a0f05',
@@ -121,7 +121,7 @@ function buildObjectBody(
         header: 'PRÓXIMO PREMIO',
         body:
           safeStamps >= 10
-            ? '¡PERRO GRATIS!'
+            ? '¡RAMEN GRATIS!'
             : safeStamps >= 5
             ? '¡25% OFF disponible!'
             : `Faltan ${5 - safeStamps} sellos para 25% OFF`,

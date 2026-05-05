@@ -84,9 +84,9 @@ function RegisterForm() {
         className="w-full max-w-sm bg-black/40 backdrop-blur-md p-8 rounded-2xl border border-zinc-800 shadow-2xl"
       >
         <div className="flex flex-col items-center mb-6 gap-3">
-          <img src="/logo.jpeg" alt="Urban Eats Logo" className="w-20 h-20 rounded-xl" />
+          <img src="/logo.jpeg" alt="Bunsik Ramen Logo" className="w-20 h-20 rounded-xl" />
           <h2 className="text-xl font-bold text-white text-center">
-            {mode === 'register' ? 'Únete a Urban Eats' : 'Recupera tu tarjeta'}
+            {mode === 'register' ? 'Únete a Bunsik Ramen' : 'Recupera tu tarjeta'}
             <br/>
             <span className="text-brand-orange neon-text text-sm tracking-widest uppercase">
               {mode === 'register' ? 'Rewards Club' : 'Ingresa tu WhatsApp'}

@@ -16,7 +16,7 @@ export const StampGrid = ({ stamps, handleRedeem }: { stamps: number, handleRede
           
           let content = null;
           if (isActive && !isDiscount && !isFree) {
-            content = <img src="/logo.jpeg" alt="Sello de Urban Eats" className="w-[80%] h-[80%] object-cover rounded-full shadow-[0_0_15px_rgba(255,184,0,0.5)]" />;
+            content = <img src="/logo.jpeg" alt="Sello de Bunsik Ramen" className="w-[80%] h-[80%] object-cover rounded-full shadow-[0_0_15px_rgba(255,184,0,0.5)]" />;
           } else if (isDiscount) {
             content = isActive ? (
               <motion.div 
@@ -39,7 +39,7 @@ export const StampGrid = ({ stamps, handleRedeem }: { stamps: number, handleRede
                 onClick={() => handleRedeem('free')}
               >
                 <div className="absolute inset-0 bg-brand-yellow/20 rounded-full blur-md" />
-                <span className="font-black text-brand-yellow neon-text text-[11px] leading-tight text-center z-10">FREE<br/>MINI DOG!</span>
+                <span className="font-black text-brand-yellow neon-text text-[11px] leading-tight text-center z-10">FREE<br/>RAMEN!</span>
               </motion.div>
             ) : (
               <span className="text-brand-yellow/40 font-bold text-[11px] text-center leading-tight">FREE<br/>MINI</span>

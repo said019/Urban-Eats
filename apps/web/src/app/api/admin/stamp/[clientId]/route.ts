@@ -48,10 +48,10 @@ export async function POST(
     // Trigger wallet updates (no await to respond faster, runs in background)
     notifyStampChange(clientId, name, newStamps, {
       alert: {
-        title: 'Urban Eats Rewards',
+        title: 'Bunsik Rewards',
         body:
           newStamps >= 10
-            ? '¡Felicidades! Completaste tu tarjeta 🌭'
+            ? '¡Felicidades! Completaste tu tarjeta 🍜'
             : newStamps === 5
             ? '¡25% OFF desbloqueado! 🎉'
             : `Nuevo sello registrado. ¡Tienes ${newStamps} de 10!`,

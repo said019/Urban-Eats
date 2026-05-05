@@ -74,9 +74,9 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
     passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID,
     teamIdentifier: process.env.APPLE_TEAM_ID,
     serialNumber: cardId,
-    organizationName: 'Urban Eats',
-    description: 'Urban Eats Rewards',
-    logoText: 'Urban Eats',
+    organizationName: 'Bunsik Ramen',
+    description: 'Bunsik Rewards',
+    logoText: 'Bunsik Ramen',
     foregroundColor: 'rgb(255, 255, 255)',
     backgroundColor: 'rgb(26, 15, 5)',
     labelColor: 'rgb(255, 138, 0)',
@@ -93,14 +93,14 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
           label: 'SELLOS',
           value: `${stamps} / 10`,
           textAlignment: 'PKTextAlignmentLeft',
-          changeMessage: '¡Ahora tienes %@ sellos! 🌭',
+          changeMessage: '¡Ahora tienes %@ sellos! 🍜',
         },
         {
           key: 'reward',
           label: 'PRÓXIMO PREMIO',
           value:
             stamps >= 10
-              ? '¡PERRO GRATIS! 🌭'
+              ? '¡RAMEN GRATIS! 🍜'
               : stamps >= 5
               ? '25% OFF disponible'
               : `Faltan ${5 - stamps} para 25% OFF`,
@@ -114,13 +114,13 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
           key: 'howto',
           label: 'CÓMO FUNCIONA',
           value:
-            'Acumula 1 sello por cada compra. Al llegar a 5 sellos obtienes 25% OFF. Al llegar a 10 sellos un Perro GRATIS!',
+            'Acumula 1 sello por cada compra. Al llegar a 5 sellos obtienes 25% OFF. Al llegar a 10 sellos un RAMEN GRATIS!',
         },
         {
           key: 'terms',
           label: 'TÉRMINOS',
           value:
-            'Válido en sucursal Urban Eats. Los hot dogs gratis no se combinan con otras promociones. Tarjeta personal e intransferible.',
+            'Válido en sucursal Bunsik Ramen. Los ramens gratis no se combinan con otras promociones. Tarjeta personal e intransferible.',
         },
       ],
     },
