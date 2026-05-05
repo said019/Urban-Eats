@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { notifyStampChange } from '@/lib/wallet-notify';
 
-// POST /api/loyalty/clients/[clientId]/redeem — Canjear recompensa
+const MAX_STAMPS = 6;
+
+// POST /api/loyalty/clients/[clientId]/redeem — Canjear ramen gratis
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ clientId: string }> }
@@ -18,32 +20,27 @@ export async function POST(
 
     const { name, stamps } = clientQuery.rows[0];
 
-    if ((type === 'discount') && stamps >= 5) {
-      // El descuento es un milestone; no resetea ni consume sellos
-      return NextResponse.json({
-        success: true,
-        newStamps: stamps,
-        message: '25% de descuento aplicado. ¡Sigue sumando para tu Ramen Gratis!',
-      });
-    }
-
-    if ((type === 'free' || type === 'free_item') && stamps >= 10) {
-      await pool.query('UPDATE clients SET stamps = 0 WHERE id = $1', [clientId]);
-      notifyStampChange(clientId, name, 0, {
+    if ((type === 'free' || type === 'free_item' || type === 'discount') && stamps >= MAX_STAMPS) {
+      // Resta MAX_STAMPS (no resetea a 0) — así si ya tenía 7, queda con 1 hacia el siguiente ramen.
+      const newStamps = Math.max(0, stamps - MAX_STAMPS);
+      await pool.query('UPDATE clients SET stamps = $1 WHERE id = $2', [newStamps, clientId]);
+      notifyStampChange(clientId, name, newStamps, {
         alert: {
           title: 'Bunsik Rewards',
-          body: '¡Canjeaste tu Ramen Gratis! Tarjeta reiniciada.',
+          body: '¡Canjeaste tu ramen gratis! 🍜 Sigue sumando para el siguiente.',
         },
       }).catch((err) => console.error('[Redeem] Notify error:', err));
       return NextResponse.json({
         success: true,
-        newStamps: 0,
-        message: '¡Ramen Gratis canjeado! Tarjeta reiniciada.',
+        newStamps,
+        message: '¡Ramen gratis canjeado! 🍜',
         reset: true,
       });
     }
 
-    return NextResponse.json({ error: 'No cumples los sellos requeridos' }, { status: 400 });
+    return NextResponse.json({
+      error: `Necesitas ${MAX_STAMPS} sellos para canjear un ramen gratis`,
+    }, { status: 400 });
   } catch (err: any) {
     console.error('[Loyalty API] Redeem error:', err);
     return NextResponse.json({ error: 'Error: ' + err.message }, { status: 500 });

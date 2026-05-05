@@ -4,6 +4,8 @@ import pool from '@/lib/db';
 import { notifyStampChange } from '@/lib/wallet-notify';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'URBAN_EATS_DEFAULT_SUPER_SECRET';
+const MAX_STAMPS = 6;
+const STAMP_HARD_CAP = 12; // Permite acumular un poco más allá de la meta para no perder sellos durante una compra grande.
 
 // POST /api/admin/stamp/[clientId] — Agregar sello
 export async function POST(
@@ -30,31 +32,31 @@ export async function POST(
     }
 
     const { name, stamps: currentStamps } = clientQuery.rows[0];
-    if (currentStamps >= 10) {
-      return NextResponse.json({ error: 'El cliente ya tiene los 10 sellos.' }, { status: 400 });
+    if (currentStamps >= STAMP_HARD_CAP) {
+      return NextResponse.json({
+        error: `El cliente ya tiene ${currentStamps} sellos. Canjea su ramen gratis antes de seguir sumando.`,
+      }, { status: 400 });
     }
 
     const { rows } = await pool.query(
       `UPDATE clients
-       SET stamps = stamps + 1,
+       SET stamps = LEAST(stamps + 1, $2),
            last_visit_at = now(),
            total_visits = COALESCE(total_visits, 0) + 1
        WHERE id = $1
        RETURNING stamps`,
-      [clientId]
+      [clientId, STAMP_HARD_CAP]
     );
     const newStamps = rows[0].stamps;
+    const reachedReward = currentStamps < MAX_STAMPS && newStamps >= MAX_STAMPS;
 
     // Trigger wallet updates (no await to respond faster, runs in background)
     notifyStampChange(clientId, name, newStamps, {
       alert: {
         title: 'Bunsik Rewards',
-        body:
-          newStamps >= 10
-            ? '¡Felicidades! Completaste tu tarjeta 🍜'
-            : newStamps === 5
-            ? '¡25% OFF desbloqueado! 🎉'
-            : `Nuevo sello registrado. ¡Tienes ${newStamps} de 10!`,
+        body: reachedReward
+          ? '¡Completaste tu tarjeta! Tu próximo ramen va por la casa 🍜'
+          : `Nuevo sello · ${newStamps} / ${MAX_STAMPS} ramens 🍜`,
       },
     }).catch((err) => console.error('[Stamp] Notify error:', err));
 

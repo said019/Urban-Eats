@@ -34,7 +34,7 @@ export async function POST(
     await notifyStampChange(clientId, name, stamps, {
       alert: {
         title: 'Bunsik Rewards',
-        body: `Tarjeta sincronizada · ${stamps} de 10 sellos`,
+        body: `Tarjeta sincronizada · ${stamps} de 6 ramens 🍜`,
       },
     });
 

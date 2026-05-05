@@ -4,7 +4,8 @@ import fs from 'fs';
 import { buildWalletQrValue } from './wallet-qr';
 
 export const WALLET_API = 'https://walletobjects.googleapis.com/walletobjects/v1';
-export const CLASS_SUFFIX = 'urban_eats_loyalty_v1';
+export const CLASS_SUFFIX = 'bunsik_ramen_loyalty_v1';
+export const MAX_STAMPS = 6;
 
 export function loadPrivateKey(): string {
   if (process.env.GOOGLE_SA_PRIVATE_KEY) {
@@ -69,11 +70,19 @@ export async function ensureLoyaltyClass(accessToken: string, classId: string, o
         defaultValue: { language: 'es-MX', value: 'Bunsik Ramen' },
       },
     },
-    hexBackgroundColor: '#1a0f05',
+    hexBackgroundColor: '#831843',          // pink-900
     reviewStatus: 'UNDER_REVIEW',
     countryCode: 'MX',
-    rewardsTier: 'Gold',
+    rewardsTier: 'Bunsik Member',
     rewardsTierLabel: 'Miembro',
+    accountIdLabel: { defaultValue: { language: 'es-MX', value: 'ID Miembro' } },
+    accountNameLabel: { defaultValue: { language: 'es-MX', value: 'Cliente' } },
+    programDetails: {
+      defaultValue: {
+        language: 'es-MX',
+        value: `Compra ${MAX_STAMPS} ramens y el siguiente va por la casa 🍜. Cada ramen suma 1 sello automáticamente.`,
+      },
+    },
   };
 
   const createRes = await fetch(`${WALLET_API}/loyaltyClass`, {
@@ -98,8 +107,15 @@ function buildObjectBody(
   stamps: number,
   origin?: string
 ) {
-  const safeStamps = Math.max(0, Math.min(Number(stamps) || 0, 10));
+  const safeStamps = Math.max(0, Math.min(Number(stamps) || 0, MAX_STAMPS));
   const qrValue = buildWalletQrValue(clientId, origin);
+  const remaining = Math.max(0, MAX_STAMPS - safeStamps);
+  const rewardBody = safeStamps >= MAX_STAMPS
+    ? '¡Tu próximo ramen va por la casa! Muestra esta tarjeta en caja.'
+    : remaining === 1
+    ? '¡Solo te falta 1 ramen para ganar uno gratis! 🍜'
+    : `Te faltan ${remaining} ramens para tu próximo gratis.`;
+
   return {
     id: objectId,
     classId,
@@ -110,23 +126,52 @@ function buildObjectBody(
       label: 'Sellos',
       balance: { int: safeStamps },
     },
+    secondaryLoyaltyPoints: {
+      label: 'Meta',
+      balance: { int: MAX_STAMPS },
+    },
     barcode: {
       type: 'QR_CODE',
       value: qrValue,
       alternateText: 'Escanear para sello',
     },
+    heroImage: {
+      sourceUri: { uri: `${origin || ''}/api/loyalty/assets/strip@2x.png` },
+      contentDescription: {
+        defaultValue: { language: 'es-MX', value: 'Tarjeta Bunsik Ramen' },
+      },
+    },
     textModulesData: [
       {
         id: 'reward',
         header: 'PRÓXIMO PREMIO',
-        body:
-          safeStamps >= 10
-            ? '¡RAMEN GRATIS!'
-            : safeStamps >= 5
-            ? '¡25% OFF disponible!'
-            : `Faltan ${5 - safeStamps} sellos para 25% OFF`,
+        body: rewardBody,
+      },
+      {
+        id: 'how',
+        header: 'CÓMO FUNCIONA',
+        body: `Compra ${MAX_STAMPS} ramens y el siguiente va gratis 🍜. Cada ramen suma 1 sello automáticamente al pagar.`,
+      },
+      {
+        id: 'social',
+        header: 'SÍGUENOS',
+        body: 'Instagram @doriperros_ · WhatsApp en chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93',
       },
     ],
+    linksModuleData: {
+      uris: [
+        {
+          uri: 'https://www.instagram.com/doriperros_',
+          description: 'Instagram',
+          id: 'ig',
+        },
+        {
+          uri: 'https://chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93',
+          description: 'Grupo WhatsApp',
+          id: 'wa',
+        },
+      ],
+    },
   };
 }
 

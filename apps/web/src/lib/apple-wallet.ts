@@ -50,7 +50,8 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
   }
 
   // Dynamic strip according to stamps
-  const safeStamps = Math.max(0, Math.min(Number(stamps) || 0, 10));
+  const MAX_STAMPS = 6;
+  const safeStamps = Math.max(0, Math.min(Number(stamps) || 0, MAX_STAMPS));
   for (const suffix of ['', '@2x', '@3x']) {
     const stampFile = `stamp-strip-${safeStamps}${suffix}.png`;
     const passFile = `strip${suffix}.png`;
@@ -69,6 +70,13 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
     altText: 'Escanear para sello',
   };
 
+  const remaining = Math.max(0, MAX_STAMPS - safeStamps);
+  const rewardValue = safeStamps >= MAX_STAMPS
+    ? '¡RAMEN GRATIS! 🍜'
+    : remaining === 1
+    ? '¡Falta 1 ramen!'
+    : `Faltan ${remaining} ramens`;
+
   const passJson = {
     formatVersion: 1,
     passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID,
@@ -76,10 +84,10 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
     serialNumber: cardId,
     organizationName: 'Bunsik Ramen',
     description: 'Bunsik Rewards',
-    logoText: 'Bunsik Ramen',
-    foregroundColor: 'rgb(255, 255, 255)',
-    backgroundColor: 'rgb(26, 15, 5)',
-    labelColor: 'rgb(255, 138, 0)',
+    logoText: 'BUNSIK RAMEN',
+    foregroundColor: 'rgb(253, 232, 244)',     // pink-50 text
+    backgroundColor: 'rgb(131, 24, 67)',       // pink-900 deep magenta
+    labelColor: 'rgb(255, 200, 220)',          // soft pink labels
     webServiceURL: `${serverUrl}/api/wallet`,
     authenticationToken: AUTH_TOKEN,
     storeCard: {
@@ -91,19 +99,14 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
         {
           key: 'stamps',
           label: 'SELLOS',
-          value: `${stamps} / 10`,
+          value: `${safeStamps} / ${MAX_STAMPS}`,
           textAlignment: 'PKTextAlignmentLeft',
-          changeMessage: '¡Ahora tienes %@ sellos! 🍜',
+          changeMessage: '¡Llevas %@ ramens! 🍜',
         },
         {
           key: 'reward',
           label: 'PRÓXIMO PREMIO',
-          value:
-            stamps >= 10
-              ? '¡RAMEN GRATIS! 🍜'
-              : stamps >= 5
-              ? '25% OFF disponible'
-              : `Faltan ${5 - stamps} para 25% OFF`,
+          value: rewardValue,
           textAlignment: 'PKTextAlignmentRight',
           changeMessage: '%@',
         },
@@ -114,13 +117,22 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
           key: 'howto',
           label: 'CÓMO FUNCIONA',
           value:
-            'Acumula 1 sello por cada compra. Al llegar a 5 sellos obtienes 25% OFF. Al llegar a 10 sellos un RAMEN GRATIS!',
+            `Compra ${MAX_STAMPS} ramens y el siguiente va por la casa 🍜.\n\n` +
+            'Cada vez que pidas ramen en Bunsik Ramen, suma 1 sello automáticamente. Al llegar a tu meta, canjéalo en caja con tu tarjeta digital.',
+        },
+        {
+          key: 'social',
+          label: 'SÍGUENOS',
+          value:
+            'Instagram: @doriperros_\n' +
+            'WhatsApp: chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93\n\n' +
+            '⚠️ La tarjeta es válida sólo si nos sigues en Instagram y estás en el grupo de WhatsApp.',
         },
         {
           key: 'terms',
           label: 'TÉRMINOS',
           value:
-            'Válido en sucursal Bunsik Ramen. Los ramens gratis no se combinan con otras promociones. Tarjeta personal e intransferible.',
+            'Válido en sucursal Bunsik Ramen. El ramen gratis no se combina con otras promociones. Tarjeta personal e intransferible. Bunsik Ramen se reserva el derecho de modificar el programa en cualquier momento.',
         },
       ],
     },

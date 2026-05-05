@@ -11,10 +11,10 @@ export default function BroadcastPage() {
   const [result, setResult] = useState<any>(null);
 
   const presets = [
-    { title: 'Bunsik Ramen 🍜', body: '¡Martes 2x1 en todos nuestros ramens! Solo hoy.' },
-    { title: 'Bunsik Ramen 🔥', body: 'Happy Hour 3pm-5pm: doble sello en cada compra.' },
+    { title: 'Bunsik Ramen 🍜', body: '¡Martes 2x1! Compra 1 ramen y llévate otro gratis. Solo hoy.' },
+    { title: 'Bunsik Ramen 🔥', body: 'Happy Hour 3pm-5pm: doble sello en cada ramen.' },
     { title: 'Bunsik Ramen ✨', body: 'Nuevo en el menú: ¡prueba el ramen de la casa!' },
-    { title: 'Bunsik Ramen 💛', body: '¡Te extrañamos! Ven esta semana y llévate un sello bonus.' },
+    { title: 'Bunsik Ramen 💖', body: '¡Te extrañamos! Ven esta semana y llévate un sello bonus.' },
   ];
 
   const send = async () => {

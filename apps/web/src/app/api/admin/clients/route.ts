@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Bonus al referidor
     if (validReferrer) {
       const updated = await pool.query(
-        'UPDATE clients SET stamps = LEAST(stamps + 1, 10) WHERE id = $1 RETURNING name, stamps',
+        'UPDATE clients SET stamps = LEAST(stamps + 1, 12) WHERE id = $1 RETURNING name, stamps',
         [validReferrer]
       );
       if (updated.rows.length > 0) {
