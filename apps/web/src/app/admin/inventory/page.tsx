@@ -1,57 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Package, Edit2, AlertCircle, TrendingUp, DollarSign, Check, X,
 } from "lucide-react";
-import { CATALOG, STORAGE_KEYS, getAllItems, getCategoryOf } from "@/lib/pos-catalog";
 
-function loadJson<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
-}
-function saveJson(key: string, value: unknown) {
-  if (typeof window === 'undefined') return;
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-}
+type Product = {
+  id: string;
+  category_key: string;
+  category_name: string;
+  category_color: string;
+  name: string;
+  cost: number;
+  price: number;
+  stock: number;
+  is_ramen: boolean;
+  is_service: boolean;
+  active: boolean;
+};
+
+const tokenHeader = () => {
+  const t = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+  return { Authorization: `Bearer ${t}` };
+};
 
 export default function InventoryPage() {
-  const [stock, setStock] = useState<Record<string, number>>({});
-  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [editingPrice, setEditingPrice] = useState<string | null>(null);
   const [adjustingStock, setAdjustingStock] = useState<string | null>(null);
 
-  useEffect(() => {
-    const initialStock: Record<string, number> = {};
-    Object.values(CATALOG).forEach((cat) => cat.items.forEach((i) => { initialStock[i.id] = i.stock; }));
-    setStock({ ...initialStock, ...loadJson(STORAGE_KEYS.STOCK, {}) });
-    setPrices(loadJson(STORAGE_KEYS.PRICES, {}));
-  }, []);
-
-  const allItems = getAllItems().filter((i) => !i.isService);
-  const getDisplayPrice = (id: string, defaultPrice: number) => prices[id] ?? defaultPrice;
-
-  const valueAtCost = allItems.reduce((s, i) => s + i.cost * (stock[i.id] ?? 0), 0);
-  const valueAtPrice = allItems.reduce((s, i) => s + getDisplayPrice(i.id, i.price) * (stock[i.id] ?? 0), 0);
-  const lowStock = allItems.filter((i) => (stock[i.id] ?? 0) <= 3);
-
-  const filtered = allItems.filter((i) => {
-    if (filter === 'all') return true;
-    if (filter === 'low') return (stock[i.id] ?? 0) <= 3;
-    return getCategoryOf(i.id)?.key === filter;
-  });
-
-  const savePrice = (id: string, newPrice: number) => {
-    const next = { ...prices, [id]: newPrice };
-    setPrices(next); saveJson(STORAGE_KEYS.PRICES, next);
-    setEditingPrice(null);
+  const load = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch('/api/admin/products', { headers: tokenHeader() });
+      if (r.ok) setProducts(await r.json());
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const saveStock = (id: string, newStock: number) => {
-    const next = { ...stock, [id]: newStock };
-    setStock(next); saveJson(STORAGE_KEYS.STOCK, next);
-    setAdjustingStock(null);
+  useEffect(() => { load(); }, []);
+
+  const tangible = useMemo(() => products.filter((p) => !p.is_service), [products]);
+  const valueAtCost = tangible.reduce((s, i) => s + i.cost * i.stock, 0);
+  const valueAtPrice = tangible.reduce((s, i) => s + i.price * i.stock, 0);
+  const lowStock = tangible.filter((i) => i.stock <= 3);
+
+  const categories = useMemo(() => {
+    const map = new Map<string, { key: string; name: string; color: string }>();
+    tangible.forEach((p) => { if (!map.has(p.category_key)) map.set(p.category_key, { key: p.category_key, name: p.category_name, color: p.category_color }); });
+    return Array.from(map.values());
+  }, [tangible]);
+
+  const filtered = tangible.filter((i) => {
+    if (filter === 'all') return true;
+    if (filter === 'low') return i.stock <= 3;
+    return i.category_key === filter;
+  });
+
+  const patchProduct = async (id: string, body: Partial<Product> & { stock_delta?: number }) => {
+    const r = await fetch(`/api/admin/products/${id}`, {
+      method: 'PATCH',
+      headers: { ...tokenHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (r.ok) {
+      const updated: Product = await r.json();
+      setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    } else {
+      const err = await r.json().catch(() => ({}));
+      alert(err.error || 'Error guardando');
+    }
   };
 
   return (
@@ -96,13 +117,8 @@ export default function InventoryPage() {
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
           <button onClick={() => setFilter('all')} className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-sm ${filter === 'all' ? 'bg-pink-500 text-white' : 'bg-white text-gray-600 border-2 border-pink-100'}`}>Todos</button>
           <button onClick={() => setFilter('low')} className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-sm ${filter === 'low' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 border-2 border-pink-100'}`}>Stock Bajo</button>
-          {Object.entries(CATALOG).filter(([k]) => k !== 'servicios').map(([key, cat]) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-sm ${filter === key ? 'text-white' : 'bg-white text-gray-600 border-2 border-pink-100'}`}
-              style={filter === key ? { backgroundColor: cat.color } : {}}
-            >
+          {categories.map((cat) => (
+            <button key={cat.key} onClick={() => setFilter(cat.key)} className={`whitespace-nowrap px-4 py-2 rounded-xl font-bold text-sm ${filter === cat.key ? 'text-white' : 'bg-white text-gray-600 border-2 border-pink-100'}`} style={filter === cat.key ? { backgroundColor: cat.color } : {}}>
               {cat.name}
             </button>
           ))}
@@ -118,48 +134,59 @@ export default function InventoryPage() {
             <div className="col-span-1 text-right">Margen</div>
           </div>
           <div className="divide-y divide-pink-50 max-h-[60vh] overflow-y-auto">
-            {filtered.map((item) => {
-              const itemStock = stock[item.id] ?? 0;
-              const cat = item._cat;
-              const currentPrice = getDisplayPrice(item.id, item.price);
-              const margin = ((currentPrice - item.cost) / item.cost * 100).toFixed(0);
-              return (
-                <div key={item.id} className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-pink-50/50">
-                  <div className="col-span-12 md:col-span-4 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ backgroundColor: cat.color }}>
-                      {item.name.charAt(0)}
+            {loading ? (
+              <div className="p-10 text-center text-pink-400 font-bold tracking-widest text-sm">CARGANDO INVENTARIO...</div>
+            ) : filtered.length === 0 ? (
+              <div className="p-10 text-center text-gray-500 font-medium text-sm">Sin productos en este filtro</div>
+            ) : (
+              filtered.map((item) => {
+                const margin = ((item.price - item.cost) / item.cost * 100).toFixed(0);
+                return (
+                  <div key={item.id} className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-pink-50/50">
+                    <div className="col-span-12 md:col-span-4 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ backgroundColor: item.category_color }}>
+                        {item.name.charAt(0)}
+                      </div>
+                      <div className="font-semibold text-sm text-gray-800 truncate">{item.name}</div>
                     </div>
-                    <div className="font-semibold text-sm text-gray-800 truncate">{item.name}</div>
+                    <div className="col-span-6 md:col-span-2"><span className="text-xs text-gray-500">{item.category_name}</span></div>
+                    <div className="col-span-6 md:col-span-2 flex items-center justify-end md:justify-center gap-1">
+                      {adjustingStock === item.id ? (
+                        <StockEditor
+                          currentStock={item.stock}
+                          onSave={async (n) => { await patchProduct(item.id, { stock: n }); setAdjustingStock(null); }}
+                          onCancel={() => setAdjustingStock(null)}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => setAdjustingStock(item.id)}
+                          className={`text-sm font-bold px-3 py-1 rounded-lg transition ${item.stock <= 3 ? 'bg-red-100 text-red-700 hover:bg-red-200' : item.stock <= 8 ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                        >
+                          {item.stock} <Edit2 size={10} className="inline ml-1" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="col-span-3 md:col-span-1 text-right text-xs text-gray-500">${item.cost}</div>
+                    <div className="col-span-6 md:col-span-2 text-right">
+                      {editingPrice === item.id ? (
+                        <PriceEditor
+                          currentPrice={item.price}
+                          onSave={async (p) => { await patchProduct(item.id, { price: p }); setEditingPrice(null); }}
+                          onCancel={() => setEditingPrice(null)}
+                        />
+                      ) : (
+                        <button onClick={() => setEditingPrice(item.id)} className="font-bold text-pink-600 hover:bg-pink-100 px-2 py-1 rounded inline-flex items-center gap-1">
+                          ${item.price} <Edit2 size={10} />
+                        </button>
+                      )}
+                    </div>
+                    <div className="col-span-3 md:col-span-1 text-right">
+                      <span className="text-xs font-bold text-green-600">{margin}%</span>
+                    </div>
                   </div>
-                  <div className="col-span-6 md:col-span-2"><span className="text-xs text-gray-500">{cat.name}</span></div>
-                  <div className="col-span-6 md:col-span-2 flex items-center justify-end md:justify-center gap-1">
-                    {adjustingStock === item.id ? (
-                      <StockEditor currentStock={itemStock} onSave={(n) => saveStock(item.id, n)} onCancel={() => setAdjustingStock(null)} />
-                    ) : (
-                      <button
-                        onClick={() => setAdjustingStock(item.id)}
-                        className={`text-sm font-bold px-3 py-1 rounded-lg transition ${itemStock <= 3 ? 'bg-red-100 text-red-700 hover:bg-red-200' : itemStock <= 8 ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
-                      >
-                        {itemStock} <Edit2 size={10} className="inline ml-1" />
-                      </button>
-                    )}
-                  </div>
-                  <div className="col-span-3 md:col-span-1 text-right text-xs text-gray-500">${item.cost}</div>
-                  <div className="col-span-6 md:col-span-2 text-right">
-                    {editingPrice === item.id ? (
-                      <PriceEditor currentPrice={currentPrice} onSave={(p) => savePrice(item.id, p)} onCancel={() => setEditingPrice(null)} />
-                    ) : (
-                      <button onClick={() => setEditingPrice(item.id)} className="font-bold text-pink-600 hover:bg-pink-100 px-2 py-1 rounded inline-flex items-center gap-1">
-                        ${currentPrice} <Edit2 size={10} />
-                      </button>
-                    )}
-                  </div>
-                  <div className="col-span-3 md:col-span-1 text-right">
-                    <span className="text-xs font-bold text-green-600">{margin}%</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -171,13 +198,7 @@ function PriceEditor({ currentPrice, onSave, onCancel }: { currentPrice: number;
   const [val, setVal] = useState(currentPrice);
   return (
     <div className="flex items-center gap-1 justify-end">
-      <input
-        type="number"
-        value={val}
-        onChange={(e) => setVal(parseFloat(e.target.value) || 0)}
-        className="w-16 text-right px-2 py-1 border-2 border-pink-300 rounded text-sm font-bold"
-        autoFocus
-      />
+      <input type="number" value={val} onChange={(e) => setVal(parseFloat(e.target.value) || 0)} className="w-16 text-right px-2 py-1 border-2 border-pink-300 rounded text-sm font-bold" autoFocus />
       <button onClick={() => onSave(val)} className="text-green-600 hover:bg-green-100 p-1 rounded"><Check size={14} /></button>
       <button onClick={onCancel} className="text-gray-400 hover:bg-gray-100 p-1 rounded"><X size={14} /></button>
     </div>
