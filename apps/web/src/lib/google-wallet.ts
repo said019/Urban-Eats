@@ -75,14 +75,8 @@ export async function ensureLoyaltyClass(accessToken: string, classId: string, o
     countryCode: 'MX',
     rewardsTier: 'Bunsik Member',
     rewardsTierLabel: 'Miembro',
-    accountIdLabel: { defaultValue: { language: 'es-MX', value: 'ID Miembro' } },
-    accountNameLabel: { defaultValue: { language: 'es-MX', value: 'Cliente' } },
-    programDetails: {
-      defaultValue: {
-        language: 'es-MX',
-        value: `Compra ${MAX_STAMPS} ramens y el siguiente va por la casa 🍜. Cada ramen suma 1 sello automáticamente.`,
-      },
-    },
+    accountIdLabel: 'ID Miembro',
+    accountNameLabel: 'Cliente',
   };
 
   const createRes = await fetch(`${WALLET_API}/loyaltyClass`, {
