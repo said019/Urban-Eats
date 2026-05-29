@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Package, Edit2, AlertCircle, TrendingUp, DollarSign, Check, X,
 } from "lucide-react";
+import { adminFetch } from "@/lib/admin-fetch";
 
 type Product = {
   id: string;
@@ -19,11 +20,6 @@ type Product = {
   is_active: boolean;
 };
 
-const tokenHeader = () => {
-  const t = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
-  return { Authorization: `Bearer ${t}` };
-};
-
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +30,10 @@ export default function InventoryPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const r = await fetch('/api/admin/products', { headers: tokenHeader() });
+      const r = await adminFetch('/api/admin/products');
       if (r.ok) setProducts(await r.json());
+    } catch {
+      // sesión vencida → adminFetch redirige al login
     } finally {
       setLoading(false);
     }
@@ -61,17 +59,21 @@ export default function InventoryPage() {
   });
 
   const patchProduct = async (id: string, body: Partial<Product> & { stock_delta?: number }) => {
-    const r = await fetch(`/api/admin/products/${id}`, {
-      method: 'PATCH',
-      headers: { ...tokenHeader(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (r.ok) {
-      const updated: Product = await r.json();
-      setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
-    } else {
-      const err = await r.json().catch(() => ({}));
-      alert(err.error || 'Error guardando');
+    try {
+      const r = await adminFetch(`/api/admin/products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (r.ok) {
+        const updated: Product = await r.json();
+        setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      } else {
+        const err = await r.json().catch(() => ({}));
+        alert(err.error || 'Error guardando');
+      }
+    } catch {
+      // sesión vencida → adminFetch redirige al login
     }
   };
 

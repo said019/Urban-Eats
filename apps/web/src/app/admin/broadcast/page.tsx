@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Megaphone, Send, Users, Moon, Zap } from "lucide-react";
+import { adminFetch } from "@/lib/admin-fetch";
 
 export default function BroadcastPage() {
   const [title, setTitle] = useState('');
@@ -23,11 +24,10 @@ export default function BroadcastPage() {
 
     setSending(true);
     setResult(null);
-    const token = localStorage.getItem('admin_token');
     try {
-      const res = await fetch('/api/admin/broadcast', {
+      const res = await adminFetch('/api/admin/broadcast', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, body, segment }),
       });
       const data = await res.json();
@@ -36,7 +36,8 @@ export default function BroadcastPage() {
         setTitle('');
         setBody('');
       }
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === 'SESSION_EXPIRED') return;
       alert('Error de red');
     } finally {
       setSending(false);

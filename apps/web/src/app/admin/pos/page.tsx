@@ -5,6 +5,7 @@ import {
   Plus, Minus, Trash2, ShoppingCart, CreditCard, Banknote, Check, Search, X,
   User, Gift, BarChart3,
 } from "lucide-react";
+import { adminFetch } from "@/lib/admin-fetch";
 
 const RAMEN_FOR_REWARD = 6;
 
@@ -48,11 +49,6 @@ type SaleSummary = {
   items: { product_id: string; product_name: string; qty: number; unit_price: number }[];
 };
 
-const tokenHeader = () => {
-  const t = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
-  return { Authorization: `Bearer ${t}` };
-};
-
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
@@ -70,12 +66,14 @@ export default function POSPage() {
 
   const loadProducts = async () => {
     try {
-      const r = await fetch('/api/admin/products', { headers: tokenHeader() });
+      const r = await adminFetch('/api/admin/products');
       if (r.ok) {
         const data: Product[] = await r.json();
         setProducts(data);
         if (!activeCat && data.length > 0) setActiveCat(data[0].category_id);
       }
+    } catch {
+      // adminFetch ya redirige a /admin/login si la sesión venció.
     } finally {
       setLoadingProducts(false);
     }
@@ -83,7 +81,7 @@ export default function POSPage() {
 
   const loadTodaySales = async () => {
     try {
-      const r = await fetch('/api/admin/sales?range=today', { headers: tokenHeader() });
+      const r = await adminFetch('/api/admin/sales?range=today');
       if (r.ok) setTodaySales(await r.json());
     } catch {}
   };
@@ -137,9 +135,9 @@ export default function POSPage() {
     if (cart.length === 0) return;
     setProcessing(true);
     try {
-      const r = await fetch('/api/admin/sales', {
+      const r = await adminFetch('/api/admin/sales', {
         method: 'POST',
-        headers: { ...tokenHeader(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client_uuid: currentCustomer?.id || null,
           client_name: currentCustomer?.name || null,
@@ -156,7 +154,8 @@ export default function POSPage() {
       setLastSale(data.sale);
       setCart([]); setCurrentCustomer(null); setUseReward(false); setShowCheckout(false);
       await Promise.all([loadProducts(), loadTodaySales()]);
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === 'SESSION_EXPIRED') return;
       alert('Falla de red');
     } finally {
       setProcessing(false);
@@ -418,8 +417,10 @@ function CustomerLookup({ onSelect, onClose }: { onSelect: (c: ApiClient) => voi
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/admin/clients-list?search=${encodeURIComponent(search)}`, { headers: tokenHeader() });
+        const r = await adminFetch(`/api/admin/clients-list?search=${encodeURIComponent(search)}`);
         if (r.ok) setResults(await r.json());
+      } catch {
+        // sesión vencida → adminFetch redirige al login
       } finally { setLoading(false); }
     }, 300);
     return () => clearTimeout(t);

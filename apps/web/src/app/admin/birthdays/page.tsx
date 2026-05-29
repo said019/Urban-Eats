@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Cake, Send } from "lucide-react";
+import { adminFetch } from "@/lib/admin-fetch";
 
 type Client = {
   id: string;
@@ -18,15 +19,13 @@ export default function BirthdaysPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
-  const token = () => (typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '');
-
   const load = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/birthdays?when=${when}`, {
-        headers: { Authorization: `Bearer ${token()}` },
-      });
+      const res = await adminFetch(`/api/admin/birthdays?when=${when}`);
       if (res.ok) setClients(await res.json());
+    } catch {
+      // sesión vencida → adminFetch redirige al login
     } finally {
       setLoading(false);
     }
@@ -38,13 +37,13 @@ export default function BirthdaysPage() {
     if (!confirm(`Enviar push "¡Feliz cumpleaños!" a los que cumplen HOY?`)) return;
     setSending(true);
     try {
-      const res = await fetch('/api/admin/birthdays', {
+      const res = await adminFetch('/api/admin/birthdays', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token()}` },
       });
       const data = await res.json();
       alert(`Enviado a ${data.sent} de ${data.totalDevices} dispositivos`);
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === 'SESSION_EXPIRED') return;
       alert('Error de red');
     } finally {
       setSending(false);

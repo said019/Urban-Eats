@@ -18,7 +18,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     const token = localStorage.getItem('admin_token');
-    if (!token) {
+    // Trata valores vacíos/corruptos como sesión inexistente (mismo criterio
+    // que adminFetch), para no renderizar el panel con un token inservible.
+    const valid = !!token && token !== 'undefined' && token !== 'null';
+    if (!valid) {
+      if (token) localStorage.removeItem('admin_token');
       queueMicrotask(() => setAuthorized(false));
       router.replace(`/admin/login?next=${encodeURIComponent(pathname || '/admin')}`);
     } else {

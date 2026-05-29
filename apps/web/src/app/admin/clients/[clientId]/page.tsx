@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, PlusCircle, Send, Bug } from "lucide-react";
 import { StampGrid } from "@/components/StampGrid";
+import { adminFetch } from "@/lib/admin-fetch";
 
 export default function AdminClientDetailPage() {
   const params = useParams();
@@ -43,12 +44,10 @@ export default function AdminClientDetailPage() {
     if (!confirm(`¿Añadir un sello a ${client.name}?`)) return;
 
     setActionLoading(true);
-    const token = localStorage.getItem('admin_token');
-    
+
     try {
-      const res = await fetch(`/api/admin/stamp/${clientId}`, {
+      const res = await adminFetch(`/api/admin/stamp/${clientId}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         await fetchClientStatus(); // refresh UI
@@ -57,6 +56,7 @@ export default function AdminClientDetailPage() {
         alert(err.error || "Algo falló.");
       }
     } catch (e) {
+      if (e instanceof Error && e.message === 'SESSION_EXPIRED') return;
       alert("Falla de Red.");
     } finally {
       setActionLoading(false);
@@ -65,11 +65,9 @@ export default function AdminClientDetailPage() {
 
   const handleForceSync = async () => {
     setSyncing(true);
-    const token = localStorage.getItem('admin_token');
     try {
-      const res = await fetch(`/api/admin/wallet-sync/${clientId}`, {
+      const res = await adminFetch(`/api/admin/wallet-sync/${clientId}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok) {
@@ -77,7 +75,8 @@ export default function AdminClientDetailPage() {
       } else {
         alert(data.error || 'Error al sincronizar');
       }
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === 'SESSION_EXPIRED') return;
       alert('Falla de red.');
     } finally {
       setSyncing(false);
@@ -85,14 +84,12 @@ export default function AdminClientDetailPage() {
   };
 
   const handleDebug = async () => {
-    const token = localStorage.getItem('admin_token');
     try {
-      const res = await fetch(`/api/admin/wallet-debug/${clientId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await adminFetch(`/api/admin/wallet-debug/${clientId}`);
       const data = await res.json();
       setDebugInfo(data);
-    } catch {
+    } catch (e) {
+      if (e instanceof Error && e.message === 'SESSION_EXPIRED') return;
       alert('Falla de red.');
     }
   };

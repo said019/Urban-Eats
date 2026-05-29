@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, PlusCircle, ArrowRight, QrCode, Users, Zap, Moon, Cake, Stamp, Gift } from "lucide-react";
 import { QrScanner } from "@/components/QrScanner";
+import { adminFetch } from "@/lib/admin-fetch";
 
 type Stats = {
   totalClients: number;
@@ -35,15 +36,13 @@ export default function AdminDashboardPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'dormant'>('all');
   const [stats, setStats] = useState<Stats | null>(null);
 
-  const token = () => (typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '');
-
   const fetchClients = async (query = '', currentFilter = filter) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/clients-list?search=${encodeURIComponent(query)}&filter=${currentFilter}`, {
-        headers: { Authorization: `Bearer ${token()}` },
-      });
+      const res = await adminFetch(`/api/admin/clients-list?search=${encodeURIComponent(query)}&filter=${currentFilter}`);
       if (res.ok) setClients(await res.json());
+    } catch {
+      // sesión vencida → adminFetch redirige al login
     } finally {
       setLoading(false);
     }
@@ -51,7 +50,7 @@ export default function AdminDashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token()}` } });
+      const res = await adminFetch('/api/admin/stats');
       if (res.ok) setStats(await res.json());
     } catch {}
   };

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Save, Gift } from "lucide-react";
+import { adminFetch } from "@/lib/admin-fetch";
 
 type Reward = {
   id: string;
@@ -19,13 +20,13 @@ export default function RewardsPage() {
   const [showNew, setShowNew] = useState(false);
   const [form, setForm] = useState({ stamp_number: 5, type: 'discount' as 'discount' | 'free_item', value: '', description: '' });
 
-  const token = () => (typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '');
-
   const load = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/rewards', { headers: { Authorization: `Bearer ${token()}` } });
+      const res = await adminFetch('/api/admin/rewards');
       if (res.ok) setRewards(await res.json());
+    } catch {
+      // sesión vencida → adminFetch redirige al login
     } finally {
       setLoading(false);
     }
@@ -36,9 +37,9 @@ export default function RewardsPage() {
   const create = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/admin/rewards', {
+      const res = await adminFetch('/api/admin/rewards', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
       if (res.ok) {
@@ -48,27 +49,36 @@ export default function RewardsPage() {
       } else {
         alert((await res.json()).error || 'Error');
       }
+    } catch {
+      // sesión vencida → adminFetch redirige al login
     } finally {
       setSaving(false);
     }
   };
 
   const update = async (id: string, patch: Partial<Reward>) => {
-    const res = await fetch(`/api/admin/rewards/${id}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(patch),
-    });
-    if (res.ok) await load();
+    try {
+      const res = await adminFetch(`/api/admin/rewards/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (res.ok) await load();
+    } catch {
+      // sesión vencida → adminFetch redirige al login
+    }
   };
 
   const remove = async (id: string) => {
     if (!confirm('¿Eliminar esta recompensa?')) return;
-    const res = await fetch(`/api/admin/rewards/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token()}` },
-    });
-    if (res.ok) await load();
+    try {
+      const res = await adminFetch(`/api/admin/rewards/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) await load();
+    } catch {
+      // sesión vencida → adminFetch redirige al login
+    }
   };
 
   return (
