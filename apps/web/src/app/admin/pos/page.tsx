@@ -169,8 +169,7 @@ export default function POSPage() {
     <div className="-m-6 sm:-m-10 min-h-[calc(100vh-4rem)] bg-gradient-to-br from-pink-50 via-white to-rose-50 text-gray-800">
       <div className="px-4 py-3 sticky top-0 z-20 bg-white/95 backdrop-blur border-b-4 border-pink-500 flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-[10px] font-black tracking-widest text-pink-500 -mr-0.5" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>RAMEN</span>
-          <span className="text-3xl font-black text-pink-500 tracking-tighter ml-1">BUNSIK</span>
+          <img src="/logo.jpg" alt="Bunsik Ramen" className="h-9 w-auto object-contain" />
         </div>
         <button onClick={() => setShowSummary(true)} className="flex items-center gap-2 bg-pink-50 hover:bg-pink-100 text-pink-700 px-3 py-2 rounded-lg font-semibold text-sm transition">
           <BarChart3 size={18} /><span>${todayRevenue.toFixed(0)}</span>
