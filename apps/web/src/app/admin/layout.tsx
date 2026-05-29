@@ -2,8 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, LayoutDashboard, Users, Gift, Megaphone, Cake, ShoppingCart, Package } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, Gift, Megaphone, Cake, ShoppingCart, Package, BarChart3 } from "lucide-react";
 import Link from "next/link";
+
+// Destinos de navegación, compartidos entre la barra lateral (desktop) y la
+// barra inferior (móvil) para no duplicar. `match` decide el estado activo.
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  match: (path: string | null) => boolean;
+  activeClass: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/admin/pos', label: 'Punto de Venta', icon: <ShoppingCart className="w-4 h-4" />, match: (p) => !!p?.startsWith('/admin/pos'), activeClass: 'bg-pink-500/10 border border-pink-500/40 text-pink-400' },
+  { href: '/admin/inventory', label: 'Inventario', icon: <Package className="w-4 h-4" />, match: (p) => !!p?.startsWith('/admin/inventory'), activeClass: 'bg-pink-500/10 border border-pink-500/40 text-pink-400' },
+  { href: '/admin/reports', label: 'Reportes', icon: <BarChart3 className="w-4 h-4" />, match: (p) => !!p?.startsWith('/admin/reports'), activeClass: 'bg-zinc-900 border border-zinc-800 text-brand-orange' },
+  { href: '/admin', label: 'Clientes', icon: <Users className="w-4 h-4" />, match: (p) => p === '/admin', activeClass: 'bg-zinc-900 border border-zinc-800 text-brand-yellow' },
+  { href: '/admin/rewards', label: 'Recompensas', icon: <Gift className="w-4 h-4" />, match: (p) => !!p?.startsWith('/admin/rewards'), activeClass: 'bg-zinc-900 border border-zinc-800 text-brand-orange' },
+  { href: '/admin/broadcast', label: 'Push Masivo', icon: <Megaphone className="w-4 h-4" />, match: (p) => !!p?.startsWith('/admin/broadcast'), activeClass: 'bg-zinc-900 border border-zinc-800 text-brand-orange' },
+  { href: '/admin/birthdays', label: 'Cumpleaños', icon: <Cake className="w-4 h-4" />, match: (p) => !!p?.startsWith('/admin/birthdays'), activeClass: 'bg-zinc-900 border border-zinc-800 text-pink-400' },
+];
+
+// Subconjunto que se muestra en la barra inferior móvil (las 4 acciones más
+// usadas por un cajero con el celular en la mano).
+const MOBILE_NAV_HREFS = ['/admin/pos', '/admin/inventory', '/admin', '/admin/reports'];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -52,42 +76,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-xl">BUNSIK POS</span>
           </div>
           <nav className="flex flex-col gap-2">
-            <Link
-              href="/admin/pos"
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/pos') ? 'bg-pink-500/10 border border-pink-500/40 text-pink-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
-            >
-              <ShoppingCart className="w-4 h-4" /> Punto de Venta
-            </Link>
-            <Link
-              href="/admin/inventory"
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/inventory') ? 'bg-pink-500/10 border border-pink-500/40 text-pink-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
-            >
-              <Package className="w-4 h-4" /> Inventario
-            </Link>
-            <Link
-              href="/admin"
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname === '/admin' ? 'bg-zinc-900 border border-zinc-800 text-brand-yellow' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
-            >
-              <Users className="w-4 h-4" /> Clientes
-            </Link>
-            <Link
-              href="/admin/rewards"
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/rewards') ? 'bg-zinc-900 border border-zinc-800 text-brand-orange' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
-            >
-              <Gift className="w-4 h-4" /> Recompensas
-            </Link>
-            <Link
-              href="/admin/broadcast"
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/broadcast') ? 'bg-zinc-900 border border-zinc-800 text-brand-orange' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
-            >
-              <Megaphone className="w-4 h-4" /> Push Masivo
-            </Link>
-            <Link
-              href="/admin/birthdays"
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${pathname?.startsWith('/admin/birthdays') ? 'bg-zinc-900 border border-zinc-800 text-pink-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
-            >
-              <Cake className="w-4 h-4" /> Cumpleaños
-            </Link>
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm tracking-wide transition-colors ${item.match(pathname) ? item.activeClass : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50'}`}
+              >
+                {item.icon} {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
         
@@ -113,9 +110,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </header>
 
-        <div className="flex-1 p-6 sm:p-10">
+        <div className="flex-1 p-6 sm:p-10 pb-24 md:pb-10">
           {children}
         </div>
+
+        {/* Barra de navegación inferior — solo móvil. En el celular la barra
+            lateral está oculta (hidden md:flex), así que sin esto no habría
+            forma de tocar para moverse entre secciones. */}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800 flex justify-around">
+          {NAV_ITEMS.filter((i) => MOBILE_NAV_HREFS.includes(i.href)).map((item) => {
+            const active = item.match(pathname);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-1 flex-1 py-2.5 text-[10px] font-bold tracking-wide transition-colors ${active ? 'text-brand-orange' : 'text-zinc-500 hover:text-white'}`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </main>
     </div>
   );
