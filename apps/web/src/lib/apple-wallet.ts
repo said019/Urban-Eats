@@ -125,8 +125,7 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
           label: 'SÍGUENOS',
           value:
             'Instagram: @doriperros_\n' +
-            'WhatsApp: chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93\n\n' +
-            '⚠️ La tarjeta es válida sólo si nos sigues en Instagram y estás en el grupo de WhatsApp.',
+            'WhatsApp: chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93',
         },
         {
           key: 'terms',
