@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import pool, { ensureMigrations } from '@/lib/db';
+import pool, { ensureMigrations, todayFilterSql } from '@/lib/db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'URBAN_EATS_DEFAULT_SUPER_SECRET';
 
@@ -24,7 +24,7 @@ type Range = 'today' | 'week' | 'month';
 function dateFilterFor(range: Range): string {
   if (range === 'week') return "WHERE s.created_at >= now() - INTERVAL '7 days'";
   if (range === 'month') return "WHERE s.created_at >= now() - INTERVAL '30 days'";
-  return "WHERE s.created_at::date = now()::date"; // today
+  return `WHERE ${todayFilterSql('s.created_at')}`; // today: día calendario en zona del negocio
 }
 
 // GET /api/admin/reports?range=today|week|month

@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_ORIGIN = 'https://urban-eats-production.up.railway.app';
+const DEFAULT_PUBLIC_ORIGIN = 'https://busik.up.railway.app';
 
 function normalizeOrigin(origin: string): string {
   const withScheme = /^https?:\/\//i.test(origin) ? origin : `https://${origin}`;

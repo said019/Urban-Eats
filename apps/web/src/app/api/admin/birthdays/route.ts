@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import pool, { ensureMigrations } from '@/lib/db';
+import pool, { ensureMigrations, localNowSql } from '@/lib/db';
 import { sendWalletPush } from '@/lib/apple-wallet';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'URBAN_EATS_DEFAULT_SUPER_SECRET';
@@ -26,17 +26,17 @@ export async function GET(request: NextRequest) {
   const when = request.nextUrl.searchParams.get('when') || 'today';
   let dateFilter = '';
   if (when === 'today') {
-    dateFilter = "AND EXTRACT(MONTH FROM birthday) = EXTRACT(MONTH FROM now()) AND EXTRACT(DAY FROM birthday) = EXTRACT(DAY FROM now())";
+    dateFilter = `AND EXTRACT(MONTH FROM birthday) = EXTRACT(MONTH FROM ${localNowSql}) AND EXTRACT(DAY FROM birthday) = EXTRACT(DAY FROM ${localNowSql})`;
   } else if (when === 'week') {
     dateFilter = `AND (
       (EXTRACT(MONTH FROM birthday) * 100 + EXTRACT(DAY FROM birthday))
       BETWEEN
-      (EXTRACT(MONTH FROM now()) * 100 + EXTRACT(DAY FROM now()))
+      (EXTRACT(MONTH FROM ${localNowSql}) * 100 + EXTRACT(DAY FROM ${localNowSql}))
       AND
-      (EXTRACT(MONTH FROM now() + INTERVAL '7 days') * 100 + EXTRACT(DAY FROM now() + INTERVAL '7 days'))
+      (EXTRACT(MONTH FROM ${localNowSql} + INTERVAL '7 days') * 100 + EXTRACT(DAY FROM ${localNowSql} + INTERVAL '7 days'))
     )`;
   } else if (when === 'month') {
-    dateFilter = "AND EXTRACT(MONTH FROM birthday) = EXTRACT(MONTH FROM now())";
+    dateFilter = `AND EXTRACT(MONTH FROM birthday) = EXTRACT(MONTH FROM ${localNowSql})`;
   }
 
   const { rows } = await pool.query(
@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
      INNER JOIN clients c ON c.id = d.loyalty_card_id
      WHERE c.business_id = $1
        AND c.birthday IS NOT NULL
-       AND EXTRACT(MONTH FROM c.birthday) = EXTRACT(MONTH FROM now())
-       AND EXTRACT(DAY FROM c.birthday) = EXTRACT(DAY FROM now())`,
+       AND EXTRACT(MONTH FROM c.birthday) = EXTRACT(MONTH FROM ${localNowSql})
+       AND EXTRACT(DAY FROM c.birthday) = EXTRACT(DAY FROM ${localNowSql})`,
     [a.businessId]
   );
 

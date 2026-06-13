@@ -61,7 +61,7 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
   }
 
   const firstName = (clientName || '').trim().split(/\s+/)[0] || clientName;
-  const serverUrl = process.env.SERVER_URL || 'https://urban-eats-production.up.railway.app';
+  const serverUrl = process.env.SERVER_URL || 'https://busik.up.railway.app';
   const qrValue = buildWalletQrValue(cardId, serverUrl);
   const qrBarcode = {
     format: 'PKBarcodeFormatQR',

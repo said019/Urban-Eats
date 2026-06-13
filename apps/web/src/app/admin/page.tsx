@@ -27,6 +27,13 @@ type Client = {
   birthday?: string | null;
 };
 
+// d.day llega como 'YYYY-MM-DD' (día local del negocio). Parsearlo con
+// new Date(string) lo tomaría como medianoche UTC y correría la etiqueta -1 día.
+function weekdayLabel(day: string): string {
+  const [y, m, d] = String(day).slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('es-MX', { weekday: 'short' });
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
@@ -129,7 +136,7 @@ export default function AdminDashboardPage() {
                   style={{ height: `${(d.stamps / maxStamps) * 100}%` }}
                 />
                 <span className="text-[10px] text-zinc-500 font-medium">
-                  {new Date(d.day).toLocaleDateString('es-MX', { weekday: 'short' })}
+                  {weekdayLabel(d.day)}
                 </span>
                 <span className="text-[10px] text-white font-bold">{d.stamps}</span>
               </div>

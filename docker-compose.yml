@@ -8,6 +8,8 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
       POSTGRES_DB: urban_eats
+      TZ: America/Mexico_City
+      PGTZ: America/Mexico_City
     ports:
       - "5432:5432"
     volumes:

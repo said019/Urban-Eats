@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import pool, { ensureMigrations } from '@/lib/db';
+import pool, { ensureMigrations, todayFilterSql, localNowSql, localDayStartSql, BUSINESS_TZ } from '@/lib/db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'URBAN_EATS_DEFAULT_SUPER_SECRET';
 
@@ -33,31 +33,31 @@ export async function GET(request: NextRequest) {
         "SELECT COUNT(*)::int AS n FROM clients WHERE business_id = $1 AND (last_visit_at IS NULL OR last_visit_at < now() - INTERVAL '30 days')",
         [bid]
       ),
-      pool.query("SELECT COUNT(*)::int AS n FROM clients WHERE business_id = $1 AND created_at::date = now()::date", [bid]),
+      pool.query(`SELECT COUNT(*)::int AS n FROM clients WHERE business_id = $1 AND ${todayFilterSql('created_at')}`, [bid]),
       pool.query(
         `SELECT COUNT(*)::int AS n FROM apple_wallet_updates u
          INNER JOIN clients c ON c.id = u.loyalty_card_id
-         WHERE c.business_id = $1 AND u.updated_at::date = now()::date`,
+         WHERE c.business_id = $1 AND ${todayFilterSql('u.updated_at')}`,
         [bid]
       ),
       pool.query(
         `SELECT COUNT(*)::int AS n FROM redemptions r
          INNER JOIN clients c ON c.id = r.client_id
-         WHERE c.business_id = $1 AND r.unlocked_at::date = now()::date`,
+         WHERE c.business_id = $1 AND ${todayFilterSql('r.unlocked_at')}`,
         [bid]
       ),
       pool.query(
         `SELECT COUNT(*)::int AS n FROM clients
          WHERE business_id = $1 AND birthday IS NOT NULL
-           AND EXTRACT(MONTH FROM birthday) = EXTRACT(MONTH FROM now())
-           AND EXTRACT(DAY FROM birthday) = EXTRACT(DAY FROM now())`,
+           AND EXTRACT(MONTH FROM birthday) = EXTRACT(MONTH FROM ${localNowSql})
+           AND EXTRACT(DAY FROM birthday) = EXTRACT(DAY FROM ${localNowSql})`,
         [bid]
       ),
       pool.query(
-        `SELECT date_trunc('day', u.updated_at)::date AS day, COUNT(*)::int AS stamps
+        `SELECT date_trunc('day', u.updated_at AT TIME ZONE '${BUSINESS_TZ}')::date AS day, COUNT(*)::int AS stamps
          FROM apple_wallet_updates u
          INNER JOIN clients c ON c.id = u.loyalty_card_id
-         WHERE c.business_id = $1 AND u.updated_at >= now() - INTERVAL '7 days'
+         WHERE c.business_id = $1 AND u.updated_at >= ${localDayStartSql(-6)}
          GROUP BY day ORDER BY day ASC`,
         [bid]
       ),

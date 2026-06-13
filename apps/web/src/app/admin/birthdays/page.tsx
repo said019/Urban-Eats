@@ -101,9 +101,12 @@ export default function BirthdaysPage() {
             </thead>
             <tbody>
               {clients.map((c) => {
-                const d = new Date(c.birthday);
-                const isToday =
-                  d.getMonth() === new Date().getMonth() && d.getDate() === new Date().getDate();
+                // birthday llega como 'YYYY-MM-DD'; parsearlo con new Date(string)
+                // lo interpretaría como medianoche UTC y correría el día -1 en México.
+                const [, bMonth, bDay] = String(c.birthday).slice(0, 10).split('-').map(Number);
+                const d = new Date(2000, bMonth - 1, bDay);
+                const today = new Date();
+                const isToday = bMonth - 1 === today.getMonth() && bDay === today.getDate();
                 return (
                   <tr key={c.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
                     <td className="p-4 pl-6 font-bold text-white">{c.name}</td>

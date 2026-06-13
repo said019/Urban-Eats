@@ -12,6 +12,13 @@ export default function RegisterPage() {
   );
 }
 
+// Fecha de hoy LOCAL en 'YYYY-MM-DD'. toISOString() daría la fecha UTC, que en
+// México después de las 6 PM ya es mañana y dejaría elegir cumpleaños futuros.
+function localTodayStr(): string {
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+}
+
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -183,7 +190,7 @@ function RegisterForm() {
               </label>
               <input
                 type="date"
-                max={new Date().toISOString().split('T')[0]}
+                max={localTodayStr()}
                 className="w-full bg-zinc-900 border border-zinc-800 text-white p-4 rounded-xl focus:border-brand-orange focus:outline-none transition-colors"
                 value={formData.birthday}
                 onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}

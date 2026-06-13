@@ -243,7 +243,7 @@ export async function updateGoogleWalletStamps(clientId: string, clientName: str
     return;
   }
 
-  const origin = process.env.SERVER_URL || 'https://urban-eats-production.up.railway.app';
+  const origin = process.env.SERVER_URL || 'https://busik.up.railway.app';
   const classId = `${ISSUER_ID}.${CLASS_SUFFIX}`;
   const objectId = `${ISSUER_ID}.${clientId.replace(/-/g, '_')}`;
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_PUBLIC_ORIGIN = 'https://urban-eats-production.up.railway.app';
+const DEFAULT_PUBLIC_ORIGIN = 'https://busik.up.railway.app';
 
 function usablePublicOrigin(value: string | undefined): string | null {
   if (!value) return null;
@@ -12,7 +12,7 @@ function usablePublicOrigin(value: string | undefined): string | null {
 
 function publicOrigin(request: NextRequest): string {
   const forwardedHost = request.headers.get('x-forwarded-host');
-  const host = forwardedHost || request.headers.get('host') || 'urban-eats-production.up.railway.app';
+  const host = forwardedHost || request.headers.get('host') || 'busik.up.railway.app';
   const forwardedProto = request.headers.get('x-forwarded-proto');
   const proto = forwardedProto || (host.includes('localhost') ? 'http' : 'https');
 

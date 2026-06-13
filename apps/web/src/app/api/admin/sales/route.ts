@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import pool from '@/lib/db';
+import pool, { todayFilterSql } from '@/lib/db';
 import { notifyStampChange } from '@/lib/wallet-notify';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'URBAN_EATS_DEFAULT_SUPER_SECRET';
@@ -211,7 +211,7 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(request.nextUrl.searchParams.get('limit') || '100', 10);
 
   let dateFilter = '';
-  if (range === 'today') dateFilter = "WHERE s.created_at::date = now()::date";
+  if (range === 'today') dateFilter = `WHERE ${todayFilterSql('s.created_at')}`;
   else if (range === 'week') dateFilter = "WHERE s.created_at >= now() - INTERVAL '7 days'";
   else if (range === 'month') dateFilter = "WHERE s.created_at >= now() - INTERVAL '30 days'";
 

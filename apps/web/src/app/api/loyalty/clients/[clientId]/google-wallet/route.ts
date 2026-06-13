@@ -39,7 +39,7 @@ export async function GET(
     }
 
     const client = rows[0];
-    const origin = process.env.SERVER_URL || 'https://urban-eats-production.up.railway.app';
+    const origin = process.env.SERVER_URL || 'https://busik.up.railway.app';
     const classId = `${ISSUER_ID}.${CLASS_SUFFIX}`;
     const objectId = `${ISSUER_ID}.${client.id.replace(/-/g, '_')}`;
 

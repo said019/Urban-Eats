@@ -275,7 +275,9 @@ SELECT
   COALESCE(SUM(profit),    0)    AS profit,
   COALESCE(SUM(ramen_qty), 0)    AS ramen_sold
 FROM sales
-WHERE DATE(created_at) = CURRENT_DATE;
+-- "Hoy" en hora del negocio (America/Mexico_City), no en el UTC de la sesión.
+WHERE created_at >= (date_trunc('day', now() AT TIME ZONE 'America/Mexico_City') AT TIME ZONE 'America/Mexico_City')
+  AND created_at <  ((date_trunc('day', now() AT TIME ZONE 'America/Mexico_City') + INTERVAL '1 day') AT TIME ZONE 'America/Mexico_City');
 
 CREATE OR REPLACE VIEW v_top_products AS
 SELECT
