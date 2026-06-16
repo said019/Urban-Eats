@@ -123,9 +123,7 @@ export async function buildApplePassBuffer(cardId: string, clientName: string, s
         {
           key: 'social',
           label: 'SÍGUENOS',
-          value:
-            'Instagram: @doriperros_\n' +
-            'WhatsApp: chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93',
+          value: 'Instagram: @bunsiksjr\ninstagram.com/bunsiksjr',
         },
         {
           key: 'terms',

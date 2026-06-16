@@ -129,12 +129,6 @@ function buildObjectBody(
       value: qrValue,
       alternateText: 'Escanear para sello',
     },
-    heroImage: {
-      sourceUri: { uri: `${origin || ''}/api/loyalty/assets/strip@2x.png` },
-      contentDescription: {
-        defaultValue: { language: 'es-MX', value: 'Tarjeta Bunsik Ramen' },
-      },
-    },
     textModulesData: [
       {
         id: 'reward',
@@ -149,20 +143,15 @@ function buildObjectBody(
       {
         id: 'social',
         header: 'SÍGUENOS',
-        body: 'Instagram @doriperros_ · WhatsApp en chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93',
+        body: 'Instagram @bunsiksjr',
       },
     ],
     linksModuleData: {
       uris: [
         {
-          uri: 'https://www.instagram.com/doriperros_',
+          uri: 'https://www.instagram.com/bunsiksjr/',
           description: 'Instagram',
           id: 'ig',
-        },
-        {
-          uri: 'https://chat.whatsapp.com/G8BmDSK06lL16s1zzx7b93',
-          description: 'Grupo WhatsApp',
-          id: 'wa',
         },
       ],
     },
