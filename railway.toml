@@ -1,0 +1,6 @@
+# This service uses /apps/web as its Railway root directory.
+# Execute the same production Next CLI without keeping npm resident.
+[deploy]
+startCommand = "node node_modules/next/dist/bin/next start"
+healthcheckPath = "/admin/login"
+healthcheckTimeout = 120
