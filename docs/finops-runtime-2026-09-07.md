@@ -30,6 +30,15 @@ local bcrypt login/JWT, seven Apple Wallet stamp states with the three strip
 resolutions, and Google Wallet JWT construction with a synthetic key. This is
 not an Apple trust-chain acceptance test or a live Google Wallet update.
 
+The full build and integration comparison passed on Node 20.12.0 / npm 10.5.0
+(the production versions), as well as Node 20.20.2 / npm 10.9.9. Nine HTTP response
+contracts and all seven Apple pass payloads were identical between launch modes;
+login/JWT and seven synthetic Google Wallet JWT cases passed. The exact-version
+run removed a 56.13 MiB npm process. Total RSS after generating Wallet passes
+varied in both directions across runs (386/484 and 527/347 MiB), so those totals
+are not evidence of sustained savings. Only the redundant parent's removal is
+structurally established; production RAM must be measured separately.
+
 Production release checks must use read-only SQL counts and complete-row hashes
 for all 15 public tables, plus schema fingerprint. Do not call registration,
 sales, stamp, Wallet sync or setup endpoints in production. Verify existing pages,
